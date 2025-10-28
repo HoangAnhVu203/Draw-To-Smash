@@ -935,6 +935,12 @@ MonoBehaviour:
   - key: EggFrag
     prefab: {fileID: 3471064301040199099, guid: 798bffda8a90e49e5aa0cb1f386ee175, type: 3}
     preload: 1
+  - key: EggFrag
+    prefab: {fileID: 2974073102066411282, guid: afabbb373b1834e4aa2883ba3ffc3e97, type: 3}
+    preload: 1
+  - key: EggFrag
+    prefab: {fileID: 6998403937769901723, guid: 3a247867835b7481aae9a88563fab019, type: 3}
+    preload: 1
 --- !u!4 &757806583
 Transform:
   m_ObjectHideFlags: 0
@@ -1329,7 +1335,7 @@ MonoBehaviour:
   fragmentScale: 0.025
   inheritEggVelocity: 1
   randomAngularVel: 10
-  fragmentsLife: 2
+  fragmentsLife: 10
 --- !u!58 &1386982295
 CircleCollider2D:
   m_ObjectHideFlags: 0

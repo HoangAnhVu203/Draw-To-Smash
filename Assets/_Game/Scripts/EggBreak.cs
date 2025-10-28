@@ -8,8 +8,8 @@ public class EggBreak : MonoBehaviour
     public string instantBreakLayer = "Line";
 
     [Header("Pool")]
-    public Pool pool;       // Kéo PoolManager vào
-    public string fragKey = "EggFrag"; // Key trùng với PoolManager
+    public Pool pool;              // Kéo PoolManager vào
+    public string fragKey = "EggFrag";
     public int fragmentCount = 8;
     public float fragmentScale = 0.005f;
 
@@ -46,14 +46,29 @@ public class EggBreak : MonoBehaviour
         if (isBroken) return;
         isBroken = true;
 
+        // Ẩn trứng ngay
         sr.enabled = false;
         col.enabled = false;
         if (rb) rb.simulated = false;
 
+        // ✅ Dùng PoolManager làm host chạy Coroutine (không bị inactive)
+        pool.StartCoroutine(SpawnFragmentsSmooth());
+
+        // Hủy vỏ trứng sau 0.1s
+        Destroy(gameObject, 0.1f);
+    }
+
+    IEnumerator SpawnFragmentsSmooth()
+    {
+        const int batch = 4; // mỗi frame bật 4 mảnh (tránh spike)
+        int count = 0;
+
         for (int i = 0; i < fragmentCount; i++)
         {
             Vector2 offset = Random.insideUnitCircle * 0.02f;
-            var frag = pool.Get(fragKey, transform.position + (Vector3)offset, Quaternion.Euler(0, 0, Random.Range(0f, 360f)));
+            var frag = pool.Get(fragKey,
+                transform.position + (Vector3)offset,
+                Quaternion.Euler(0, 0, Random.Range(0f, 360f)));
             if (!frag) continue;
 
             frag.transform.localScale = Vector3.one * fragmentScale;
@@ -63,12 +78,17 @@ public class EggBreak : MonoBehaviour
             {
                 rbf.velocity = inheritEggVelocity && rb ? rb.velocity : Vector2.zero;
                 rbf.angularVelocity = Random.Range(-randomAngularVel, randomAngularVel);
+                rbf.collisionDetectionMode = CollisionDetectionMode2D.Discrete;
+                rbf.interpolation = RigidbodyInterpolation2D.None;
             }
 
-            StartCoroutine(ReturnFragmentAfter(frag, fragmentsLife));
-        }
+            // ✅ trả về pool sau vài giây
+            pool.StartCoroutine(ReturnFragmentAfter(frag, fragmentsLife));
 
-        Destroy(gameObject, 0.1f);
+            count++;
+            if (count % batch == 0)
+                yield return null; // nhường 1 frame (tránh lag)
+        }
     }
 
     IEnumerator ReturnFragmentAfter(GameObject frag, float delay)
