@@ -1,32 +1,32 @@
 using System.Collections;
 using UnityEngine;
 
+[DisallowMultipleComponent]
 public class EggBreak : MonoBehaviour
 {
     [Header("Va chạm")]
-    public float breakVelocity = 3f;
+    public float breakVelocity = 5f;
     public string instantBreakLayer = "Line";
 
-    [Header("Pool")]
-    public Pool pool;              // Kéo PoolManager vào
-    public string fragKey = "EggFrag";
-    public int fragmentCount = 8;
-    public float fragmentScale = 0.005f;
+    [Header("Pool (5 key – 5 mảnh + VFX)")]
+    public Pool pool;
+    public string[] fragKeys = { "EggFrag1", "EggFrag2", "EggFrag3", "EggFrag4", "EggFrag5" };
+    public string VFXkey = "VFX";
+    public float fragmentScale = 0.03f;
 
     [Header("Vật lý mảnh")]
     public bool inheritEggVelocity = true;
     public float randomAngularVel = 10f;
-    public float fragmentsLife = 2f;
 
     Rigidbody2D rb;
     SpriteRenderer sr;
     Collider2D col;
-    bool isBroken = false;
+    bool isBroken;
 
     void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
-        sr = GetComponent<SpriteRenderer>();
+        rb  = GetComponent<Rigidbody2D>();
+        sr  = GetComponent<SpriteRenderer>();
         col = GetComponent<Collider2D>() ?? gameObject.AddComponent<CircleCollider2D>();
     }
 
@@ -34,6 +34,7 @@ public class EggBreak : MonoBehaviour
     {
         if (isBroken) return;
 
+        // nếu va vào line hoặc lực đủ mạnh
         if (LayerMask.NameToLayer(instantBreakLayer) == c.gameObject.layer ||
             c.relativeVelocity.magnitude >= breakVelocity)
         {
@@ -46,55 +47,50 @@ public class EggBreak : MonoBehaviour
         if (isBroken) return;
         isBroken = true;
 
-        // Ẩn trứng ngay
+        // Ẩn trứng nhưng không xóa object
         sr.enabled = false;
         col.enabled = false;
         if (rb) rb.simulated = false;
 
-        // ✅ Dùng PoolManager làm host chạy Coroutine (không bị inactive)
-        pool.StartCoroutine(SpawnFragmentsSmooth());
-
-        // Hủy vỏ trứng sau 0.1s
-        Destroy(gameObject, 0.1f);
-    }
-
-    IEnumerator SpawnFragmentsSmooth()
-    {
-        const int batch = 4; // mỗi frame bật 4 mảnh (tránh spike)
-        int count = 0;
-
-        for (int i = 0; i < fragmentCount; i++)
+        if (pool && !string.IsNullOrEmpty(VFXkey))
         {
-            Vector2 offset = Random.insideUnitCircle * 0.02f;
-            var frag = pool.Get(fragKey,
-                transform.position + (Vector3)offset,
-                Quaternion.Euler(0, 0, Random.Range(0f, 360f)));
-            if (!frag) continue;
+            var vfx = pool.Get(VFXkey, transform.position, Quaternion.identity);
+            if (vfx)
+            {
+                // nếu prefab VFX có ParticleSystem, phát hiệu ứng
+                var ps = vfx.GetComponent<ParticleSystem>();
+                if (ps)
+                {
+                    ps.Clear(true);
+                    ps.Play(true);
+                    pool.StartCoroutine(ReturnVFXWhenDone(ps, VFXkey));
+                }
+            }
+        }
+
+        foreach (var key in fragKeys)
+        {
+            var pos = (Vector2)transform.position + Random.insideUnitCircle * 0.02f;
+            var rot = Quaternion.Euler(0, 0, Random.Range(0f, 360f));
+
+            var frag = pool.Get(key, pos, rot);
+            if (!frag) continue; // nếu hết hàng thì bỏ qua
 
             frag.transform.localScale = Vector3.one * fragmentScale;
 
             var rbf = frag.GetComponent<Rigidbody2D>();
             if (rbf)
             {
-                rbf.velocity = inheritEggVelocity && rb ? rb.velocity : Vector2.zero;
+                rbf.velocity = (inheritEggVelocity && rb) ? rb.velocity : Vector2.zero;
                 rbf.angularVelocity = Random.Range(-randomAngularVel, randomAngularVel);
-                rbf.collisionDetectionMode = CollisionDetectionMode2D.Discrete;
-                rbf.interpolation = RigidbodyInterpolation2D.None;
             }
-
-            // ✅ trả về pool sau vài giây
-            pool.StartCoroutine(ReturnFragmentAfter(frag, fragmentsLife));
-
-            count++;
-            if (count % batch == 0)
-                yield return null; // nhường 1 frame (tránh lag)
         }
     }
 
-    IEnumerator ReturnFragmentAfter(GameObject frag, float delay)
+    IEnumerator ReturnVFXWhenDone(ParticleSystem ps, string key)
     {
-        yield return new WaitForSeconds(delay);
-        if (frag && pool)
-            pool.Return(fragKey, frag);
+        yield return new WaitWhile(() => ps && ps.IsAlive(true));
+        if (ps && pool)
+            pool.Return(key, ps.gameObject);
     }
 }

@@ -93,12 +93,13 @@ public class DrawFall : MonoBehaviour
         ContinueStroke(world);
     }
 
+    // DrawFall.cs (hoặc script vẽ của bạn)
     Collider2D HitDrawArea(Vector2 worldPos)
     {
-        var hit = Physics2D.OverlapPoint(worldPos);
-        if (!hit) return null;
-        return hit.gameObject.layer == drawLayer ? hit : null;
+        int mask = 1 << LayerMask.NameToLayer(drawLayerName);
+        return Physics2D.OverlapPoint(worldPos, mask);
     }
+
 
     Vector2 ScreenToWorld(Vector2 screen) =>
         (Vector2)cam.ScreenToWorldPoint(new Vector3(screen.x, screen.y, 0));
@@ -106,7 +107,7 @@ public class DrawFall : MonoBehaviour
     // --- TẠO NÉT (MESH + COLLIDER) ---
 
     void BeginStroke(Vector2 start)
-{
+    {
     strokeGO = new GameObject("Line");
     strokeGO.transform.position = Vector3.zero;
 
@@ -134,7 +135,7 @@ public class DrawFall : MonoBehaviour
 
     pts.Clear(); verts.Clear(); tris.Clear(); uvs.Clear(); outline.Clear();
     AddPoint(start, true);
-}
+    }   
 
 
     void ContinueStroke(Vector2 p)
@@ -275,7 +276,7 @@ public class StrokeCollisionHandler : MonoBehaviour
         if (!IsInVanishLayers(target.layer)) return;
 
         int id = target.GetInstanceID();
-        if (scheduled.Contains(id)) return;          // đã hẹn rồi → bỏ
+        if (scheduled.Contains(id)) return;         
 
         scheduled.Add(id);
 
