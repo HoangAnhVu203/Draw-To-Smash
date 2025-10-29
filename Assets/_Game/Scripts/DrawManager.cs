@@ -4,7 +4,7 @@ using System.Collections;
 
 
 [DisallowMultipleComponent]
-public class DrawFall : MonoBehaviour
+public class DrawManager : MonoBehaviour
 {
     [Header("Camera (để trống sẽ tự lấy Main Camera)")]
     public Camera cam;
@@ -56,6 +56,11 @@ public class DrawFall : MonoBehaviour
         drawLayer = LayerMask.NameToLayer(drawLayerName);
     }
 
+    private void Start()
+    {
+        UIManager.Instance.OpenUI<CanvasGamePlay>();
+    }
+
     void Update()
     {
 #if UNITY_EDITOR || UNITY_STANDALONE
@@ -93,7 +98,7 @@ public class DrawFall : MonoBehaviour
         ContinueStroke(world);
     }
 
-    // DrawFall.cs (hoặc script vẽ của bạn)
+    // DrawManager.cs (hoặc script vẽ của bạn)
     Collider2D HitDrawArea(Vector2 worldPos)
     {
         int mask = 1 << LayerMask.NameToLayer(drawLayerName);
@@ -108,33 +113,33 @@ public class DrawFall : MonoBehaviour
 
     void BeginStroke(Vector2 start)
     {
-    strokeGO = new GameObject("Line");
-    strokeGO.transform.position = Vector3.zero;
+        strokeGO = new GameObject("Line");
+        strokeGO.transform.position = Vector3.zero;
 
-    // gán layer "Line" cho nét vẽ
-    int lineLayer = LayerMask.NameToLayer("Line");
-    if (lineLayer != -1)
-        strokeGO.layer = lineLayer;              
-    else
-        Debug.LogWarning("Layer 'Line' chưa tồn tại. Hãy tạo trong Project Settings → Tags and Layers."); // ← NEW
+        // gán layer "Line" cho nét vẽ
+        int lineLayer = LayerMask.NameToLayer("Line");
+        if (lineLayer != -1)
+            strokeGO.layer = lineLayer;              
+        else
+            Debug.LogWarning("Layer 'Line' chưa tồn tại. Hãy tạo trong Project Settings → Tags and Layers."); // ← NEW
 
-    mf = strokeGO.AddComponent<MeshFilter>();
-    mr = strokeGO.AddComponent<MeshRenderer>();
-    poly = strokeGO.AddComponent<PolygonCollider2D>();
+        mf = strokeGO.AddComponent<MeshFilter>();
+        mr = strokeGO.AddComponent<MeshRenderer>();
+        poly = strokeGO.AddComponent<PolygonCollider2D>();
 
-    Shader s = Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
-    if (!s) s = Shader.Find("Sprites/Default");
-    if (!s) s = Shader.Find("Unlit/Color");
-    var mat = new Material(s) { color = strokeColor };
-    mat.renderQueue = 3000;
-    mr.material = mat;
-    mr.sortingOrder = sortingOrder;
+        Shader s = Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
+        if (!s) s = Shader.Find("Sprites/Default");
+        if (!s) s = Shader.Find("Unlit/Color");
+        var mat = new Material(s) { color = strokeColor };
+        mat.renderQueue = 3000;
+        mr.material = mat;
+        mr.sortingOrder = sortingOrder;
 
-    mesh = new Mesh { name = "StrokeMeshRuntime" };
-    mf.sharedMesh = mesh;
+        mesh = new Mesh { name = "StrokeMeshRuntime" };
+        mf.sharedMesh = mesh;
 
-    pts.Clear(); verts.Clear(); tris.Clear(); uvs.Clear(); outline.Clear();
-    AddPoint(start, true);
+        pts.Clear(); verts.Clear(); tris.Clear(); uvs.Clear(); outline.Clear();
+        AddPoint(start, true);
     }   
 
 
@@ -236,6 +241,8 @@ public class DrawFall : MonoBehaviour
         strokeGO = null; mf = null; mr = null; poly = null; mesh = null; rb = null;
         pts.Clear(); verts.Clear(); tris.Clear(); uvs.Clear(); outline.Clear();
         activeDrawArea = null;
+
+        GameManager.Instance?.NotifyStrokeCompleted();
     }
 
     System.Collections.IEnumerator FadeAndDisable(GameObject go, float dur)
