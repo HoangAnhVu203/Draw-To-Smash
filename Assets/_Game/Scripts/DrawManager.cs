@@ -6,8 +6,13 @@ using System.Collections;
 [DisallowMultipleComponent]
 public class DrawManager : MonoBehaviour
 {
+    public static DrawManager Instance { get; private set; }
+
     [Header("Camera (để trống sẽ tự lấy Main Camera)")]
     public Camera cam;
+
+    [Header("Nơi chứa các nét vẽ (để rọn dẹp)")]
+    public Transform strokesRoot;
 
     [Header("Nét vẽ")]
     public float thickness = 0.25f;
@@ -52,8 +57,19 @@ public class DrawManager : MonoBehaviour
 
     void Awake()
     {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+
         if (!cam) cam = Camera.main;
         drawLayer = LayerMask.NameToLayer(drawLayerName);
+
+        // Tự tạo thùng chứa nếu quên gán
+        if (!strokesRoot)
+        {
+            var root = new GameObject("StrokesRoot");
+            root.transform.SetParent(transform, false);
+            strokesRoot = root.transform;
+        }
     }
 
     private void Start()
@@ -114,6 +130,7 @@ public class DrawManager : MonoBehaviour
     void BeginStroke(Vector2 start)
     {
         strokeGO = new GameObject("Line");
+        strokeGO.transform.SetParent(strokesRoot, false);
         strokeGO.transform.position = Vector3.zero;
 
         // gán layer "Line" cho nét vẽ
@@ -214,6 +231,29 @@ public class DrawManager : MonoBehaviour
         }
         else
         {
+            // 1) TÍNH TRUNG TÂM VÀ DỜI VERTEX/COLLIDER VỀ GỐC
+            Vector3 center = Vector3.zero;
+            for (int i = 0; i < verts.Count; i++) center += verts[i];
+            center /= verts.Count;
+
+            // dời toàn bộ dữ liệu hình học về quanh (0,0)
+            for (int i = 0; i < verts.Count; i++) verts[i] -= center;
+            for (int i = 0; i < pts.Count; i++) pts[i] -= (Vector2)center;
+            for (int i = 0; i < outline.Count; i++) outline[i] -= (Vector2)center;
+
+            // đưa transform của nét ra đúng vị trí thế giới
+            strokeGO.transform.position = center;
+
+            // cập nhật lại mesh & collider sau khi dịch
+            mesh.Clear();
+            mesh.SetVertices(verts);
+            mesh.SetTriangles(tris, 0);
+            mesh.SetUVs(0, uvs);
+            mesh.RecalculateBounds();
+            mesh.RecalculateNormals();
+            if (outline.Count >= 3) poly.SetPath(0, outline.ToArray());
+
+            // 2) THÊM RIGIDBODY SAU KHI ĐÃ RE-CENTER
             rb = strokeGO.AddComponent<Rigidbody2D>();
             rb.gravityScale = gravityScale;
             rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
@@ -223,7 +263,6 @@ public class DrawManager : MonoBehaviour
             var pm = new PhysicsMaterial2D("StrokePM") { friction = friction, bounciness = bounciness };
             poly.sharedMaterial = pm;
 
-            // gắn trình xử lý va chạm
             var handler = strokeGO.AddComponent<StrokeCollisionHandler>();
             handler.vanishLayers = vanishLayers;
             handler.objectToEnable = objectToEnable;
@@ -232,10 +271,8 @@ public class DrawManager : MonoBehaviour
 
         if (activeDrawArea)
         {
-            if (fadeOutArea)
-                StartCoroutine(FadeAndDisable(activeDrawArea.gameObject, fadeDuration));
-            else
-                activeDrawArea.gameObject.SetActive(false);
+            if (fadeOutArea) StartCoroutine(FadeAndDisable(activeDrawArea.gameObject, fadeDuration));
+            else activeDrawArea.gameObject.SetActive(false);
         }
 
         strokeGO = null; mf = null; mr = null; poly = null; mesh = null; rb = null;
@@ -243,6 +280,14 @@ public class DrawManager : MonoBehaviour
         activeDrawArea = null;
 
         GameManager.Instance?.NotifyStrokeCompleted();
+    }
+
+    public void ClearAllStrokes()
+    {
+        if (!strokesRoot) return;
+        for (int i = strokesRoot.childCount - 1; i >= 0; i--)
+            Destroy(strokesRoot.GetChild(i).gameObject);
+        Debug.Log("[DrawManager] Cleared all strokes.");
     }
 
     System.Collections.IEnumerator FadeAndDisable(GameObject go, float dur)

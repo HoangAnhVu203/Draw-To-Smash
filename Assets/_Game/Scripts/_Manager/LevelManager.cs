@@ -8,7 +8,7 @@ public class LevelManager : MonoBehaviour
     [Serializable]
     public class LevelEntry
     {
-        public string id;           // ví dụ "LV1"
+        public string id;           
         public GameObject prefab;   // prefab level
     }
 
@@ -33,11 +33,25 @@ public class LevelManager : MonoBehaviour
     public event Action<GameObject, int> OnLevelLoaded;   // (levelGO, index)
     public event Action<int> OnLevelUnloaded;            // (index cũ)
 
+    [Header("Nơi chứa đối tượng runtime để dọn khi đổi level")]
+    public Transform runtimeRoot;               // NEW
+
+    int eggFragLayer = -1;   
+
     void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         if (!levelRoot) levelRoot = transform;
+
+        if (!runtimeRoot)
+        {
+            var rt = new GameObject("__RuntimeRoot");
+            runtimeRoot = rt.transform;
+            runtimeRoot.SetParent(transform, false);
+        }
+
+        eggFragLayer = LayerMask.NameToLayer("EggFrag");
     }
 
     void Start()
@@ -51,6 +65,8 @@ public class LevelManager : MonoBehaviour
     }
 
     //================= PUBLIC API =================//
+
+    public Transform RuntimeRoot => runtimeRoot;
 
     public void Replay()
     {
@@ -95,14 +111,13 @@ public class LevelManager : MonoBehaviour
 
     public void LoadLevel(int index)
     {
-        if (levels.Count == 0)
-        {
-            Debug.LogError("[LevelManager] Chưa cấu hình levels!");
-            return;
-        }
+        if (levels.Count == 0) { Debug.LogError("[LevelManager] Chưa cấu hình levels!"); return; }
         index = Mathf.Clamp(index, 0, levels.Count - 1);
 
-        // Hủy level cũ
+        // 1) DỌN runtime TRƯỚC KHI HỦY/LOAD (đảm bảo sạch)
+        CleanRuntime();
+
+        // 2) Hủy level cũ
         if (CurrentLevelGO)
         {
             OnLevelUnloaded?.Invoke(CurrentIndex);
@@ -110,25 +125,42 @@ public class LevelManager : MonoBehaviour
             CurrentLevelGO = null;
         }
 
-        // Spawn level mới
+        // 3) Spawn level mới
         var entry = levels[index];
-        if (!entry.prefab)
-        {
-            Debug.LogError($"[LevelManager] Prefab rỗng tại index {index}");
-            return;
-        }
+        if (!entry.prefab) { Debug.LogError($"[LevelManager] Prefab rỗng tại index {index}"); return; }
 
         CurrentLevelGO = Instantiate(entry.prefab, levelRoot);
         CurrentLevelGO.name = string.IsNullOrEmpty(entry.id) ? $"Level_{index}" : entry.id;
         CurrentIndex = index;
 
-        if (saveProgress)
-        {
-            PlayerPrefs.SetInt(PP_LEVEL_INDEX, CurrentIndex);
-            PlayerPrefs.Save();
-        }
+        if (saveProgress) { PlayerPrefs.SetInt(PP_LEVEL_INDEX, CurrentIndex); PlayerPrefs.Save(); }
 
         OnLevelLoaded?.Invoke(CurrentLevelGO, CurrentIndex);
+        GameManager.Instance?.ResetForNewLevel();
         Debug.Log($"[LevelManager] Loaded {CurrentLevelGO.name} (index {CurrentIndex})");
+    }
+
+    public void CleanRuntime()
+    {
+        if (runtimeRoot)
+        {
+            for (int i = runtimeRoot.childCount - 1; i >= 0; i--)
+                Destroy(runtimeRoot.GetChild(i).gameObject);
+        }
+
+        if (eggFragLayer >= 0)
+        {
+            var all = FindObjectsOfType<GameObject>();
+            foreach (var go in all)
+            {
+                if (!go || !go.activeInHierarchy) continue;
+                if (go.layer == eggFragLayer) Destroy(go);
+            }
+        }
+
+        DrawManager.Instance?.ClearAllStrokes();
+
+        foreach (var p in FindObjectsOfType<Pool>(true))
+            p.DespawnAll(); 
     }
 }

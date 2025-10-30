@@ -7,6 +7,9 @@ public class FailPanelUI : MonoBehaviour
 
     void Awake()
     {
+        if (replayBtn)
+            replayBtn.onClick.AddListener(() => GameManager.Instance?.ReplayLevel()); 
+            
         if (!replayBtn) replayBtn = transform.Find("Button - RePlay")?.GetComponent<Button>();
         if (replayBtn) replayBtn.onClick.AddListener(OnReplay);
     }

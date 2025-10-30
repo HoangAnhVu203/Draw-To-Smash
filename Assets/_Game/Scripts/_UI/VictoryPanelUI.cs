@@ -10,28 +10,34 @@ public class VictoryPanelUI : MonoBehaviour
 
     void Awake()
     {
-        // Tự tìm nếu chưa gán trong Inspector (tên con gợi ý)
+        // Tự tìm nếu chưa gán
         if (!replayBtn) replayBtn = transform.Find("Button - RePlay")?.GetComponent<Button>();
         if (!nextBtn) nextBtn = transform.Find("Button - NextLV")?.GetComponent<Button>();
         if (!closeBtn) closeBtn = transform.Find("Button - Close")?.GetComponent<Button>();
 
-        // Gắn sự kiện
+        // Gắn đúng 1 listener cho mỗi nút
         if (replayBtn) replayBtn.onClick.AddListener(OnReplay);
         if (nextBtn) nextBtn.onClick.AddListener(OnNext);
-        if (closeBtn) closeBtn.onClick.AddListener(() => gameObject.SetActive(false));
+        if (closeBtn) closeBtn.onClick.AddListener(OnClose);
     }
 
     public void OnReplay()
     {
-        Time.timeScale = 1f;                           // thoát pause
-        LevelManager.Instance?.Replay();              // nạp lại level hiện tại
-        gameObject.SetActive(false);                  // ẩn panel
+        Time.timeScale = 1f;
+        LevelManager.Instance?.Replay();
+        gameObject.SetActive(false);
     }
 
     public void OnNext()
     {
         Time.timeScale = 1f;
-        LevelManager.Instance?.NextLevel();          // qua màn kế tiếp
+        LevelManager.Instance?.NextLevel();
+        gameObject.SetActive(false);
+    }
+
+    public void OnClose()
+    {
+        Time.timeScale = 1f;
         gameObject.SetActive(false);
     }
 }
