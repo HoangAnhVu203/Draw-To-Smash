@@ -389,7 +389,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7456600528831261851}
   m_Layer: 0
-  m_Name: LV8
+  m_Name: LV8 - LineSwing
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -477,7 +477,7 @@ MonoBehaviour:
     prefab: {fileID: 6638573508428628182, guid: 796b0c30a57694c8b9f8b0caa6e7ea91, type: 3}
     preload: 2
   - key: VFX
-    prefab: {fileID: 1899287386741466138, guid: 39930efd9e4c56c4081722d06a2f7351, type: 3}
+    prefab: {fileID: 2548678512854298812, guid: 9655516eed9e946aeb1076259c76940c, type: 3}
     preload: 2
 --- !u!1 &4447287264522828777
 GameObject:

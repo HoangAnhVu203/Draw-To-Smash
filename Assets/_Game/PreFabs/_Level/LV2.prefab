@@ -1041,7 +1041,7 @@ MonoBehaviour:
     prefab: {fileID: 6638573508428628182, guid: 796b0c30a57694c8b9f8b0caa6e7ea91, type: 3}
     preload: 2
   - key: VFX
-    prefab: {fileID: 1899287386741466138, guid: 39930efd9e4c56c4081722d06a2f7351, type: 3}
+    prefab: {fileID: 2548678512854298812, guid: 9655516eed9e946aeb1076259c76940c, type: 3}
     preload: 2
 --- !u!1 &6039213377271089304
 GameObject:
