@@ -409,7 +409,7 @@ MonoBehaviour:
   levelRoot: {fileID: 725108416}
   saveProgress: 0
   loopAtEnd: 1
-  defaultStartIndex: 1
+  defaultStartIndex: 0
   runtimeRoot: {fileID: 0}
 --- !u!4 &884656436
 Transform:
