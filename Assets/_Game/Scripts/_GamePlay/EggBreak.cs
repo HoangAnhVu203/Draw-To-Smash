@@ -1,4 +1,5 @@
 using System.Collections;
+using Spine.Unity;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -17,16 +18,19 @@ public class EggBreak : MonoBehaviour
     [Header("Vật lý mảnh")]
     public bool inheritEggVelocity = true;
     public float randomAngularVel = 10f;
+    // public SkeletonAnimation ske;
 
     Rigidbody2D rb;
-    SpriteRenderer sr;
+    // SpriteRenderer sr;
     Collider2D col;
+    SkeletonAnimation ske;
     bool isBroken;
 
     void Awake()
     {
         rb  = GetComponent<Rigidbody2D>();
-        sr  = GetComponent<SpriteRenderer>();
+        // sr = GetComponent<SpriteRenderer>();
+        ske = GetComponent<SkeletonAnimation>();
         col = GetComponent<Collider2D>() ?? gameObject.AddComponent<CircleCollider2D>();
     }
 
@@ -47,8 +51,9 @@ public class EggBreak : MonoBehaviour
         if (isBroken) return;
         isBroken = true;
 
-        sr.enabled = false;
+        // sr.enabled = false;
         col.enabled = false;
+        ske.enabled = false;
         if (rb) rb.simulated = false;
 
         var parent = LevelManager.Instance ? LevelManager.Instance.RuntimeRoot : null;
