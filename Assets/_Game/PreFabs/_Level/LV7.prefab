@@ -140,7 +140,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8452510456606652099}
   m_Layer: 0
-  m_Name: LV5 - R
+  m_Name: LV7
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -502,7 +502,7 @@ GameObject:
   - component: {fileID: 2227875937640856576}
   - component: {fileID: 1683954456270835583}
   - component: {fileID: 2977603093971657258}
-  m_Layer: 6
+  m_Layer: 7
   m_Name: Egg
   m_TagString: Untagged
   m_Icon: {fileID: 0}

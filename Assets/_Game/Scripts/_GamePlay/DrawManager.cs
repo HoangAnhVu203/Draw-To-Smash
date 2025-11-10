@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Collections;
 
-
 [DisallowMultipleComponent]
 public class DrawManager : MonoBehaviour
 {
@@ -14,11 +13,17 @@ public class DrawManager : MonoBehaviour
     [Header("Nơi chứa các nét vẽ (để rọn dẹp)")]
     public Transform strokesRoot;
 
-    [Header("Nét vẽ")]
+    [Header("Nét vẽ cơ bản")]
     public float thickness = 0.25f;
     public float minPointDistance = 0.05f;
     public Color strokeColor = new(0.2f, 0.8f, 0.2f, 1f);
     public int sortingOrder = 200;
+
+    [Header("Vật liệu / Texture cho nét vẽ kiểu hạt")]
+    [Tooltip("Gán material có texture hình tròn xanh, WrapMode=Repeat để được chuỗi hạt.")]
+    public Material strokeMaterial;          // NEW: nếu null sẽ fallback dùng màu solid
+    [Tooltip("Hệ số lặp texture theo độ dài (tăng = hạt dày hơn)")]
+    public float uvScale = 3f;               // NEW: chỉnh cho spacing hạt
 
     [Header("Vật lý")]
     public float gravityScale = 1f;
@@ -36,8 +41,8 @@ public class DrawManager : MonoBehaviour
     public string[] vanishLayers = { "GoodEgg", "BadEgg" };
 
     [Header("GameObject được bật khi va chạm trứng")]
-    public GameObject objectToEnable;         // hiệu ứng hoặc UI bật khi va chạm
-    public float vanishDelay = 1f;            // trễ trước khi trứng biến mất
+    public GameObject objectToEnable;
+    public float vanishDelay = 1f;
 
     GameObject strokeGO;
     MeshFilter mf;
@@ -54,6 +59,7 @@ public class DrawManager : MonoBehaviour
     readonly List<Vector2> outline = new();
 
     int drawLayer;
+    float pathLength;               // NEW: tích lũy độ dài để map UV
 
     void Awake()
     {
@@ -63,7 +69,6 @@ public class DrawManager : MonoBehaviour
         if (!cam) cam = Camera.main;
         drawLayer = LayerMask.NameToLayer(drawLayerName);
 
-        // Tự tạo thùng chứa nếu quên gán
         if (!strokesRoot)
         {
             var root = new GameObject("StrokesRoot");
@@ -72,7 +77,7 @@ public class DrawManager : MonoBehaviour
         }
     }
 
-    private void Start()
+    void Start()
     {
         UIManager.Instance.OpenUI<CanvasGamePlay>();
     }
@@ -81,8 +86,8 @@ public class DrawManager : MonoBehaviour
     {
 #if UNITY_EDITOR || UNITY_STANDALONE
         if (Input.GetMouseButtonDown(0)) TryBeginStroke(Input.mousePosition);
-        if (Input.GetMouseButton(0))     TryContinueStroke(Input.mousePosition);
-        if (Input.GetMouseButtonUp(0))   EndStroke();
+        if (Input.GetMouseButton(0)) TryContinueStroke(Input.mousePosition);
+        if (Input.GetMouseButtonUp(0)) EndStroke();
 #else
         if (Input.touchCount > 0)
         {
@@ -94,7 +99,7 @@ public class DrawManager : MonoBehaviour
 #endif
     }
 
-    // --- VẼ CHỈ TRONG DrawArea ---
+    // ===== VẼ TRONG DrawArea =====
 
     void TryBeginStroke(Vector2 screenPos)
     {
@@ -114,18 +119,16 @@ public class DrawManager : MonoBehaviour
         ContinueStroke(world);
     }
 
-    // DrawManager.cs (hoặc script vẽ của bạn)
     Collider2D HitDrawArea(Vector2 worldPos)
     {
         int mask = 1 << LayerMask.NameToLayer(drawLayerName);
         return Physics2D.OverlapPoint(worldPos, mask);
     }
 
-
     Vector2 ScreenToWorld(Vector2 screen) =>
         (Vector2)cam.ScreenToWorldPoint(new Vector3(screen.x, screen.y, 0));
 
-    // --- TẠO NÉT (MESH + COLLIDER) ---
+    // ===== TẠO NÉT =====
 
     void BeginStroke(Vector2 start)
     {
@@ -133,32 +136,37 @@ public class DrawManager : MonoBehaviour
         strokeGO.transform.SetParent(strokesRoot, false);
         strokeGO.transform.position = Vector3.zero;
 
-        // gán layer "Line" cho nét vẽ
         int lineLayer = LayerMask.NameToLayer("Line");
-        if (lineLayer != -1)
-            strokeGO.layer = lineLayer;              
-        else
-            Debug.LogWarning("Layer 'Line' chưa tồn tại. Hãy tạo trong Project Settings → Tags and Layers."); // ← NEW
+        if (lineLayer != -1) strokeGO.layer = lineLayer;
+        else Debug.LogWarning("Layer 'Line' chưa tồn tại. Hãy tạo trong Project Settings → Tags and Layers.");
 
         mf = strokeGO.AddComponent<MeshFilter>();
         mr = strokeGO.AddComponent<MeshRenderer>();
         poly = strokeGO.AddComponent<PolygonCollider2D>();
 
-        Shader s = Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
-        if (!s) s = Shader.Find("Sprites/Default");
-        if (!s) s = Shader.Find("Unlit/Color");
-        var mat = new Material(s) { color = strokeColor };
-        mat.renderQueue = 3000;
-        mr.material = mat;
+        // NEW: dùng material custom nếu có, nếu không thì tạo material màu xanh như cũ
+        if (strokeMaterial)
+        {
+            mr.material = new Material(strokeMaterial); // clone để không sửa shared
+        }
+        else
+        {
+            Shader s = Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
+            if (!s) s = Shader.Find("Sprites/Default");
+            if (!s) s = Shader.Find("Unlit/Color");
+            var mat = new Material(s) { color = strokeColor };
+            mat.renderQueue = 3000;
+            mr.material = mat;
+        }
         mr.sortingOrder = sortingOrder;
 
         mesh = new Mesh { name = "StrokeMeshRuntime" };
         mf.sharedMesh = mesh;
 
         pts.Clear(); verts.Clear(); tris.Clear(); uvs.Clear(); outline.Clear();
+        pathLength = 0f;                    // NEW
         AddPoint(start, true);
-    }   
-
+    }
 
     void ContinueStroke(Vector2 p)
     {
@@ -168,7 +176,12 @@ public class DrawManager : MonoBehaviour
 
     void AddPoint(Vector2 p, bool first)
     {
+        // length cho UV
+        if (pts.Count > 0)
+            pathLength += Vector2.Distance(pts[^1], p);
+
         pts.Add(p);
+
         Vector2 dir = (pts.Count >= 2) ? (pts[^1] - pts[^2]).normalized : Vector2.right;
         Vector2 n = new(-dir.y, dir.x);
         float half = thickness * 0.5f;
@@ -179,7 +192,8 @@ public class DrawManager : MonoBehaviour
         verts.Add(new Vector3(left.x, left.y, 0));
         verts.Add(new Vector3(right.x, right.y, 0));
 
-        float v = pts.Count / 10f;
+        // NEW: UV theo độ dài -> texture lặp thành chuỗi hạt
+        float v = pathLength * (uvScale * 0.2f);
         uvs.Add(new Vector2(0, v));
         uvs.Add(new Vector2(1, v));
 
@@ -231,29 +245,25 @@ public class DrawManager : MonoBehaviour
         }
         else
         {
-            // 1) TÍNH TRUNG TÂM VÀ DỜI VERTEX/COLLIDER VỀ GỐC
+            // Re-center mesh quanh pivot
             Vector3 center = Vector3.zero;
             for (int i = 0; i < verts.Count; i++) center += verts[i];
             center /= verts.Count;
 
-            // dời toàn bộ dữ liệu hình học về quanh (0,0)
             for (int i = 0; i < verts.Count; i++) verts[i] -= center;
-            for (int i = 0; i < pts.Count; i++) pts[i] -= (Vector2)center;
             for (int i = 0; i < outline.Count; i++) outline[i] -= (Vector2)center;
 
-            // đưa transform của nét ra đúng vị trí thế giới
             strokeGO.transform.position = center;
 
-            // cập nhật lại mesh & collider sau khi dịch
             mesh.Clear();
             mesh.SetVertices(verts);
             mesh.SetTriangles(tris, 0);
             mesh.SetUVs(0, uvs);
             mesh.RecalculateBounds();
             mesh.RecalculateNormals();
-            if (outline.Count >= 3) poly.SetPath(0, outline.ToArray());
+            if (outline.Count >= 3)
+                poly.SetPath(0, outline.ToArray());
 
-            // 2) THÊM RIGIDBODY SAU KHI ĐÃ RE-CENTER
             rb = strokeGO.AddComponent<Rigidbody2D>();
             rb.gravityScale = gravityScale;
             rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
@@ -263,10 +273,10 @@ public class DrawManager : MonoBehaviour
             var pm = new PhysicsMaterial2D("StrokePM") { friction = friction, bounciness = bounciness };
             poly.sharedMaterial = pm;
 
-            var handler = strokeGO.AddComponent<StrokeCollisionHandler>();
-            handler.vanishLayers = vanishLayers;
-            handler.objectToEnable = objectToEnable;
-            handler.vanishDelay = vanishDelay;
+            //var handler = strokeGO.AddComponent<StrokeCollisionHandler>();
+            //handler.vanishLayers = vanishLayers;
+            //handler.objectToEnable = objectToEnable;
+            //handler.vanishDelay = vanishDelay;
         }
 
         if (activeDrawArea)
@@ -290,7 +300,7 @@ public class DrawManager : MonoBehaviour
         Debug.Log("[DrawManager] Cleared all strokes.");
     }
 
-    System.Collections.IEnumerator FadeAndDisable(GameObject go, float dur)
+    IEnumerator FadeAndDisable(GameObject go, float dur)
     {
         var sr = go.GetComponent<SpriteRenderer>();
         if (!sr || dur <= 0f)
@@ -308,67 +318,5 @@ public class DrawManager : MonoBehaviour
             yield return null;
         }
         go.SetActive(false);
-    }
-}
-
-//=================== XỬ LÝ VA CHẠM ===================//
-
-public class StrokeCollisionHandler : MonoBehaviour
-{
-    [HideInInspector] public string[] vanishLayers;
-    [HideInInspector] public GameObject objectToEnable;
-    [HideInInspector] public float vanishDelay = 1f;
-
-    // Ngăn hẹn giờ nhiều lần cho cùng 1 object
-    private static readonly HashSet<int> scheduled = new HashSet<int>();
-
-    void OnCollisionEnter2D(Collision2D col)
-    {
-        var target = col.gameObject;
-        if (!IsInVanishLayers(target.layer)) return;
-
-        int id = target.GetInstanceID();
-        if (scheduled.Contains(id)) return;         
-
-        scheduled.Add(id);
-
-        if (objectToEnable && !objectToEnable.activeSelf)
-            objectToEnable.SetActive(true);
-
-        StartCoroutine(DisableAfterDelay(target, id));
-    }
-
-    bool IsInVanishLayers(int layer)
-    {
-        if (vanishLayers == null) return false;
-        for (int i = 0; i < vanishLayers.Length; i++)
-            if (layer == LayerMask.NameToLayer(vanishLayers[i])) return true;
-        return false;
-    }
-
-    IEnumerator DisableAfterDelay(GameObject target, int id)
-    {
-        float t = 0f;
-        while (t < vanishDelay)
-        {
-            // target có thể đã bị Destroy/SetActive(false) ở nơi khác
-            if (target == null)
-            {
-                scheduled.Remove(id);
-                yield break;
-            }
-            t += Time.deltaTime;
-            yield return null;
-        }
-
-        // kiểm tra lần cuối trước khi thao tác
-        if (target != null)
-        {
-            // nếu đã bị ẩn rồi thì thôi; nếu còn đang bật thì tắt
-            if (target.activeInHierarchy)
-                target.SetActive(false);
-        }
-
-        scheduled.Remove(id);
     }
 }
