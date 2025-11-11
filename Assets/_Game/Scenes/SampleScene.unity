@@ -171,12 +171,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 1080, y: 1920}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 1
+  m_MatchWidthOrHeight: 0.5
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -391,35 +391,37 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   levels:
   - id: 1
-    prefab: {fileID: 28615984269897294, guid: 3fb7c864c0e45704fb8a84fec43bb68b, type: 3}
+    prefab: {fileID: 2790226620320421732, guid: 3fb7c864c0e45704fb8a84fec43bb68b, type: 3}
   - id: 2
-    prefab: {fileID: 4531103253715636958, guid: 013dffbb48397c54286beca11eb8ca52, type: 3}
+    prefab: {fileID: 3001355661757584561, guid: 013dffbb48397c54286beca11eb8ca52, type: 3}
   - id: 3
-    prefab: {fileID: 8514772727913649411, guid: 8323893a45b4e46329e213d2fbb5272a, type: 3}
+    prefab: {fileID: 1354777210980437210, guid: 8323893a45b4e46329e213d2fbb5272a, type: 3}
   - id: 4
-    prefab: {fileID: 1896103361870076932, guid: 8712728836ac7c7418fdc62b8e54e3a8, type: 3}
+    prefab: {fileID: 1626690989589557353, guid: 8712728836ac7c7418fdc62b8e54e3a8, type: 3}
   - id: 5
-    prefab: {fileID: 1021440450666586915, guid: ce3ef444ba648834e81130f13b226548, type: 3}
+    prefab: {fileID: 4867157493106065756, guid: ce3ef444ba648834e81130f13b226548, type: 3}
   - id: 6
-    prefab: {fileID: 3710530466054996636, guid: 869a2da32f6b64c18a2c2d588ba68d6d, type: 3}
+    prefab: {fileID: 7484034785108306884, guid: 869a2da32f6b64c18a2c2d588ba68d6d, type: 3}
   - id: 7
-    prefab: {fileID: 2583222094615076234, guid: e1a219e740add4faab469d41083422c9, type: 3}
+    prefab: {fileID: 648283262904432445, guid: e1a219e740add4faab469d41083422c9, type: 3}
   - id: 8
-    prefab: {fileID: 3011761843299151667, guid: 9a8af7f2d9da14be98c7fdc56442a7c8, type: 3}
+    prefab: {fileID: 1100132517317873843, guid: 9a8af7f2d9da14be98c7fdc56442a7c8, type: 3}
   - id: 9
-    prefab: {fileID: 3111180299215937643, guid: d01144205621219419de1aee2624bc9a, type: 3}
+    prefab: {fileID: 1146179610624329195, guid: d01144205621219419de1aee2624bc9a, type: 3}
   - id: 10
-    prefab: {fileID: 2902289544216469571, guid: 4cabab30a838341948de7e6b5b4dbd15, type: 3}
+    prefab: {fileID: 7816853415180587816, guid: 4cabab30a838341948de7e6b5b4dbd15, type: 3}
   - id: 11
-    prefab: {fileID: 6368810485338555939, guid: 08c9c521c42324751a30ee6eb3c8229b, type: 3}
+    prefab: {fileID: 9115264304167738798, guid: 08c9c521c42324751a30ee6eb3c8229b, type: 3}
   - id: 12
-    prefab: {fileID: 6847248388577991117, guid: e4c28810498a74508b841f8e7fb58ac3, type: 3}
+    prefab: {fileID: 4428693902000397340, guid: e4c28810498a74508b841f8e7fb58ac3, type: 3}
   - id: 13
-    prefab: {fileID: 8190994586918297804, guid: 9e3523d7267744fcc88eacaee0eaf904, type: 3}
+    prefab: {fileID: 8069368634225685030, guid: 9e3523d7267744fcc88eacaee0eaf904, type: 3}
   - id: 14
-    prefab: {fileID: 6950696269582382699, guid: d006f2d88763b6c489bbe02195a3f982, type: 3}
+    prefab: {fileID: 4706201455685587100, guid: d006f2d88763b6c489bbe02195a3f982, type: 3}
   - id: 15
-    prefab: {fileID: 1612115265814439998, guid: e0acf8d0e179a6b43accafadcd761c63, type: 3}
+    prefab: {fileID: 2677417217759426024, guid: e0acf8d0e179a6b43accafadcd761c63, type: 3}
+  - id: 16
+    prefab: {fileID: 2641240375643697876, guid: f12360c1bc87f42559fd2aa6f911bdd9, type: 3}
   levelRoot: {fileID: 725108416}
   saveProgress: 0
   loopAtEnd: 1
@@ -554,12 +556,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cam: {fileID: 519420031}
   strokesRoot: {fileID: 1179251738}
-  thickness: 0.25
+  beadPrefab: {fileID: 8845485767146570230, guid: cb84a6f206a7046bebabf780c0075b56, type: 3}
+  beadDiameter: 0.25
+  beadOverlap: 0.5
   minPointDistance: 0.05
-  strokeColor: {r: 0.2, g: 0.8, b: 0.2, a: 1}
   sortingOrder: 200
-  strokeMaterial: {fileID: 2100000, guid: 8869bd606ef66aa409a7c7f15f6bc273, type: 2}
-  uvScale: 20
   gravityScale: 2
   friction: 0.4
   bounciness: 0.05

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public enum GameState { Gameplay, Victory, Fail, Pause }
@@ -6,9 +7,15 @@ public enum GameState { Gameplay, Victory, Fail, Pause }
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
+
     void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         Instance = this;
         Time.timeScale = 1f;
         state = GameState.Gameplay;
@@ -25,10 +32,13 @@ public class GameManager : MonoBehaviour
     [Header("Thông số luật")]
     [Tooltip("Tên layer của BadEgg")]
     public string badEggLayerName = "BadEgg";
+
     [Tooltip("Kiểm tra ‘theo dõi’ mỗi 0.5s (không quyết định kết quả)")]
     public float pollInterval = 0.5f;
+
     [Tooltip("Mốc thời gian chấm từ lúc bắt đầu gameplay (chỉ xét THẮNG nếu đến lúc đó không còn BadEgg)")]
     public float tFromStartToJudge = 10f;
+
     [Tooltip("Mốc thời gian chấm từ sau khi vẽ xong (xét THUA nếu còn BadEgg; xét THẮNG nếu hết)")]
     public float tAfterStrokeToJudge = 10f;
 
@@ -43,6 +53,9 @@ public class GameManager : MonoBehaviour
     Coroutine startJudgeCo;
     Coroutine postStrokeJudgeCo;
 
+    // ====== Thêm: quản lý BadEgg cho EggBreak ======
+    readonly HashSet<EggBreak> badEggs = new HashSet<EggBreak>();
+
     void Start()
     {
         badEggLayer = LayerMask.NameToLayer(badEggLayerName);
@@ -56,12 +69,38 @@ public class GameManager : MonoBehaviour
         startJudgeCo = StartCoroutine(JudgeFromStart());
     }
 
-    // ======= Bảng quy tắc bạn yêu cầu =======
+    // ======= Bảng quy tắc gốc =======
     // Gameplay bắt đầu:     Còn BadEgg  -> Poll mỗi 0.5s (không chấm)
     // Gameplay bắt đầu:     10s trôi qua không còn BadEgg -> Victory
     // Sau khi vẽ nét:       10s trôi qua vẫn còn BadEgg    -> Fail
     // Sau khi vẽ nét:       10s trôi qua không còn BadEgg  -> Victory
-    // ========================================
+    // ================================
+
+    // ================= API cho EggBreak =================
+
+    /// <summary>
+    /// Gọi trong EggBreak.Awake: đăng ký egg. Chỉ thêm nếu là BadEgg.
+    /// Không thay đổi luật, chỉ hỗ trợ tối ưu / theo dõi.
+    /// </summary>
+    public void RegisterEgg(EggBreak egg, bool isBad)
+    {
+        if (!egg || !isBad) return;
+        badEggs.Add(egg);
+    }
+
+    /// <summary>
+    /// Gọi trong EggBreak.Break: khi egg vỡ.
+    /// Nếu là BadEgg -> xoá khỏi danh sách.
+    /// Gameplay gốc vẫn dùng ExistsActiveInLayer để quyết định.
+    /// </summary>
+    public void OnEggBroken(EggBreak egg)
+    {
+        if (egg == null) return;
+        if (egg.isBadEgg)
+            badEggs.Remove(egg);
+    }
+
+    // ================= Từ DrawManager =================
 
     public void NotifyStrokeCompleted()
     {
@@ -71,7 +110,7 @@ public class GameManager : MonoBehaviour
         if (drawController) drawController.enabled = false;
 
         // Khi đã vào pha “sau khi vẽ”, ta CHỈ chấm ở mốc 10s sau vẽ.
-        // Có thể huỷ kết quả “10s kể từ đầu” nếu muốn tránh xung đột:
+        // Huỷ mốc “10s kể từ đầu” nếu chưa dùng, để tránh xung đột.
         if (startJudgeCo != null && !startJudgeDone)
         {
             StopCoroutine(startJudgeCo);
@@ -87,8 +126,8 @@ public class GameManager : MonoBehaviour
     {
         while (state == GameState.Gameplay)
         {
-            // Bạn có thể cập nhật UI đếm số trứng ở đây nếu muốn
-            // int count = CountBadEggs();
+            // Có thể dùng ExistsActiveInLayer(badEggLayer) hoặc badEggs.Count để debug
+            // int count = ...;
             yield return new WaitForSecondsRealtime(pollInterval);
         }
     }
@@ -125,8 +164,40 @@ public class GameManager : MonoBehaviour
         else SetVictory();
     }
 
+    // ================= ExistsActiveInLayer =================
+    //
+    // Giữ nguyên behavior cũ, nhưng:
+    // - Nếu layer là BadEgg và có danh sách badEggs -> ưu tiên check từ đó.
+    // - Nếu không có hoặc không còn active -> fallback sang FindObjectsOfType như cũ.
+    //
     bool ExistsActiveInLayer(int layer)
     {
+        // Ưu tiên dùng danh sách badEggs nếu đang check BadEggLayer
+        if (layer == badEggLayer && badEggs.Count > 0)
+        {
+            bool has = false;
+            var toRemove = new List<EggBreak>();
+
+            foreach (var egg in badEggs)
+            {
+                if (!egg || !egg.gameObject.activeInHierarchy)
+                {
+                    toRemove.Add(egg);
+                    continue;
+                }
+                has = true;
+            }
+
+            // dọn egg null/inactive
+            for (int i = 0; i < toRemove.Count; i++)
+                badEggs.Remove(toRemove[i]);
+
+            if (has)
+                return true; // vẫn còn ít nhất 1 BadEgg active
+            // nếu không còn -> tiếp tục fallback FindObjectsOfType để giữ đúng behavior cũ
+        }
+
+        // Fallback: behavior gốc
         var gos = FindObjectsOfType<GameObject>();
         for (int i = 0; i < gos.Length; i++)
         {
@@ -144,6 +215,9 @@ public class GameManager : MonoBehaviour
         state = GameState.Victory;
         Time.timeScale = 0f;
         UIManager.Instance.OpenUI<CanvasVictory>();
+
+        if (victoryPanel) victoryPanel.SetActive(true);
+        if (failPanel)    failPanel.SetActive(false);
     }
 
     void SetFail()
@@ -152,6 +226,9 @@ public class GameManager : MonoBehaviour
         state = GameState.Fail;
         Time.timeScale = 0f;
         UIManager.Instance.OpenUI<CanvasFail>();
+
+        if (failPanel)    failPanel.SetActive(true);
+        if (victoryPanel) victoryPanel.SetActive(false);
     }
 
     public void Pause()
@@ -159,6 +236,7 @@ public class GameManager : MonoBehaviour
         if (state != GameState.Gameplay) return;
         state = GameState.Pause;
         Time.timeScale = 0f;
+        if (pausePanel) pausePanel.SetActive(true);
     }
 
     public void Resume()
@@ -166,6 +244,7 @@ public class GameManager : MonoBehaviour
         if (state != GameState.Pause) return;
         state = GameState.Gameplay;
         Time.timeScale = 1f;
+        if (pausePanel) pausePanel.SetActive(false);
     }
 
     public void ReplayLevel()
@@ -197,6 +276,8 @@ public class GameManager : MonoBehaviour
         startJudgeDone = false;
         postStrokeJudgeDone = false;
 
+        badEggs.Clear(); // reset danh sách bad egg cho level mới
+
         if (drawController) drawController.enabled = true;
 
         if (victoryPanel) victoryPanel.SetActive(false);
@@ -204,7 +285,9 @@ public class GameManager : MonoBehaviour
         if (pausePanel)   pausePanel.SetActive(false);
 
         // khởi động lại poll + mốc “10s kể từ đầu gameplay”
-        pollingCo = StartCoroutine(PollBadEggs());
+        if (pollInterval > 0f)
+            pollingCo = StartCoroutine(PollBadEggs());
+
         startJudgeCo = StartCoroutine(JudgeFromStart());
         postStrokeJudgeCo = null; // chỉ tạo khi NotifyStrokeCompleted()
     }

@@ -5,45 +5,85 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class EggBreak : MonoBehaviour
 {
-    [Header("Va chạm")]
+    [Header("Loại trứng")]
+    public bool isBadEgg = false;   // BadEgg = true, GoodEgg = false
+
+    [Header("Điều kiện vỡ")]
     public float breakVelocity = 5f;
     public string instantBreakLayer = "Line";
 
-    [Header("Pool (5 key – 5 mảnh + VFX)")]
-    public Pool pool;
-    public string[] fragKeys = { "EggFrag1", "EggFrag2", "EggFrag3", "EggFrag4", "EggFrag5" };
-    public string VFXkey = "VFX";
-    public float fragmentScale = 0.03f;
+    [Header("Nhóm mảnh vỡ (ShellGroup)")]
+    [Tooltip("Empty chứa Manh1..Manh5, mặc định SetActive(false).")]
+    public GameObject shellObject;
+    [Tooltip("Cho mảnh có physics hay không. Đa số để false cho nhẹ.")]
+    public bool shellHasPhysics = false;
+    [Tooltip("Tách ShellGroup ra khỏi Egg trước khi tắt Egg.")]
+    public bool detachShell = true;
 
-    [Header("Vật lý mảnh")]
-    public bool inheritEggVelocity = true;
-    public float randomAngularVel = 10f;
-    // public SkeletonAnimation ske;
+    [Header("Pool (VFX)")]
+    public Pool pool;
+    public string VFXkey = "VFX";
 
     Rigidbody2D rb;
-    // SpriteRenderer sr;
     Collider2D col;
     SkeletonAnimation ske;
     bool isBroken;
+    int instantBreakLayerId;
 
     void Awake()
     {
         rb  = GetComponent<Rigidbody2D>();
-        // sr = GetComponent<SpriteRenderer>();
-        ske = GetComponent<SkeletonAnimation>();
         col = GetComponent<Collider2D>() ?? gameObject.AddComponent<CircleCollider2D>();
+        ske = GetComponent<SkeletonAnimation>();
+
+        instantBreakLayerId = LayerMask.NameToLayer(instantBreakLayer);
+        if (instantBreakLayerId < 0)
+            Debug.LogWarning($"[EggBreak] Layer '{instantBreakLayer}' chưa tồn tại.");
+
+        // Đăng ký BadEgg với GameManager
+        if (GameManager.Instance)
+            GameManager.Instance.RegisterEgg(this, isBadEgg);
+
+        // Chuẩn bị ShellGroup
+        if (shellObject)
+        {
+            // Nếu trong Shell có Spine thì init trước
+            var shellSke = shellObject.GetComponent<SkeletonAnimation>();
+            if (shellSke)
+            {
+                shellSke.Initialize(false);
+                shellSke.enabled = false;
+            }
+
+            // if (!shellHasPhysics)
+            // {
+            //     var srb = shellObject.GetComponent<Rigidbody2D>();
+            //     if (srb) srb.simulated = false;
+
+            //     var cols = shellObject.GetComponentsInChildren<Collider2D>(true);
+            //     foreach (var c in cols) c.enabled = false;
+            // }
+
+            shellObject.SetActive(false);
+        }
+
+        // Prewarm VFX trong pool (nếu có)
+        if (pool && !string.IsNullOrEmpty(VFXkey))
+        {
+            var v = pool.Get(VFXkey, transform.position, Quaternion.identity, null);
+            if (v) pool.Return(v);
+        }
     }
 
     void OnCollisionEnter2D(Collision2D c)
     {
         if (isBroken) return;
 
-        // nếu va  vào line hoặc lực đủ mạnh
-        if (LayerMask.NameToLayer(instantBreakLayer) == c.gameObject.layer ||
-            c.relativeVelocity.magnitude >= breakVelocity)
-        {
+        bool hitLine   = (instantBreakLayerId >= 0 && c.gameObject.layer == instantBreakLayerId);
+        bool strongHit = c.relativeVelocity.sqrMagnitude >= breakVelocity * breakVelocity;
+
+        if (hitLine || strongHit)
             Break();
-        }
     }
 
     void Break()
@@ -51,53 +91,79 @@ public class EggBreak : MonoBehaviour
         if (isBroken) return;
         isBroken = true;
 
-        // sr.enabled = false;
-        col.enabled = false;
-        ske.enabled = false;
-        if (rb) rb.simulated = false;
+        // Tắt logic / hình trứng gốc
+        if (col) col.enabled = false;
+        if (ske) ske.enabled = false;
+        if (rb)  rb.simulated = false;
 
-        var parent = LevelManager.Instance ? LevelManager.Instance.RuntimeRoot : null;
-        int fragLayer = LayerMask.NameToLayer("EggFrag"); // nhớ tạo layer này (nếu muốn)
+        // ===== BẬT NHÓM MẢNH VỠ =====
+        if (shellObject)
+        {
+            // đặt vị trí tại chỗ trứng
+            shellObject.transform.position = transform.position;
 
-        // VFX (nếu có)
+            // Tách khỏi Egg TRƯỚC KHI tắt Egg
+            if (detachShell)
+            {
+                var parent = LevelManager.Instance ? LevelManager.Instance.RuntimeRoot : null;
+                if (parent)
+                    shellObject.transform.SetParent(parent, true);
+                else
+                    shellObject.transform.SetParent(null, true);
+            }
+
+            shellObject.SetActive(true);
+
+            // Nếu shell có Spine
+            var shellSke = shellObject.GetComponent<SkeletonAnimation>();
+            if (shellSke)
+                shellSke.enabled = true;
+        }
+
+        // ===== VFX =====
         if (pool && !string.IsNullOrEmpty(VFXkey))
         {
+            var parent = LevelManager.Instance ? LevelManager.Instance.RuntimeRoot : null;
             var vfx = pool.Get(VFXkey, transform.position, Quaternion.identity, parent);
-            var ps  = vfx ? vfx.GetComponent<ParticleSystem>() : null;
-            if (ps)
+            if (vfx)
             {
-                ps.Clear(true);
-                ps.Play(true);
-                // trả về pool khi xong
-                if (pool) pool.StartCoroutine(ReturnVFXWhenDone(ps));
+                var ps = vfx.GetComponent<ParticleSystem>();
+                if (ps)
+                {
+                    ps.Clear(true);
+                    ps.Play(true);
+                    StartCoroutine(ReturnVFX(ps, vfx));
+                }
+                else
+                {
+                    StartCoroutine(ReturnAfterDelay(vfx, 0.7f));
+                }
             }
         }
 
-        foreach (var key in fragKeys)
-        {
-            var pos = (Vector2)transform.position + Random.insideUnitCircle * 0.02f;
-            var rot = Quaternion.Euler(0, 0, Random.Range(0f, 360f));
+        // Thông báo GameManager
+        if (GameManager.Instance)
+            GameManager.Instance.OnEggBroken(this);
 
-            var frag = pool.Get(key, pos, rot, parent);
-            if (!frag) continue;
-
-            if (fragLayer >= 0) frag.layer = fragLayer;
-            frag.transform.localScale = Vector3.one * fragmentScale;
-
-            var rbf = frag.GetComponent<Rigidbody2D>();
-            if (rbf)
-            {
-                rbf.velocity = (inheritEggVelocity && rb) ? rb.velocity : Vector2.zero;
-                rbf.angularVelocity = Random.Range(-randomAngularVel, randomAngularVel);
-            }
-        }
-
+        // Cuối cùng mới tắt Egg gốc
         gameObject.SetActive(false);
     }
 
-    IEnumerator ReturnVFXWhenDone(ParticleSystem ps)
+    // ===== Pool helpers =====
+
+    IEnumerator ReturnVFX(ParticleSystem ps, GameObject go)
     {
-        yield return new WaitWhile(() => ps && ps.IsAlive(true));
-        if (ps && pool) pool.Return(ps.gameObject);   
+        while (ps != null && ps.IsAlive(true))
+            yield return null;
+
+        if (pool != null && go != null)
+            pool.Return(go);
+    }
+
+    IEnumerator ReturnAfterDelay(GameObject go, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (pool != null && go != null)
+            pool.Return(go);
     }
 }
