@@ -4927,7 +4927,7 @@ GameObject:
   - component: {fileID: 7859688714209720368}
   - component: {fileID: 7358706420694416137}
   m_Layer: 0
-  m_Name: LongDo
+  m_Name: EggBreckVFX
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

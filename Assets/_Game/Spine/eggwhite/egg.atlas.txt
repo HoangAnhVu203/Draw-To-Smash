@@ -1,0 +1,96 @@
+
+egg.png
+size: 1953,1361
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+egg1
+  rotate: true
+  xy: 2, 7
+  size: 851, 1073
+  orig: 851, 1073
+  offset: 0, 0
+  index: -1
+egg2
+  rotate: false
+  xy: 1099, 2
+  size: 852, 1074
+  orig: 852, 1074
+  offset: 0, 0
+  index: -1
+eye egg 1 down
+  rotate: false
+  xy: 2, 1228
+  size: 363, 131
+  orig: 363, 131
+  offset: 0, 0
+  index: -1
+eye egg 2 down
+  rotate: false
+  xy: 367, 1226
+  size: 371, 133
+  orig: 371, 133
+  offset: 0, 0
+  index: -1
+eye egg 3
+  rotate: false
+  xy: 378, 920
+  size: 377, 304
+  orig: 377, 304
+  offset: 0, 0
+  index: -1
+eye egg 3 down
+  rotate: false
+  xy: 740, 1226
+  size: 377, 133
+  orig: 377, 133
+  offset: 0, 0
+  index: -1
+eye egg 4
+  rotate: false
+  xy: 1119, 1078
+  size: 387, 281
+  orig: 387, 281
+  offset: 0, 0
+  index: -1
+eye egg 4 down
+  rotate: false
+  xy: 1508, 1078
+  size: 380, 281
+  orig: 380, 281
+  offset: 0, 0
+  index: -1
+eye egg2
+  rotate: false
+  xy: 2, 922
+  size: 374, 302
+  orig: 374, 302
+  offset: 0, 0
+  index: -1
+eye1
+  rotate: true
+  xy: 757, 860
+  size: 364, 340
+  orig: 364, 340
+  offset: 0, 0
+  index: -1
+
+egg2.png
+size: 1710,1078
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+egg3
+  rotate: false
+  xy: 2, 2
+  size: 852, 1074
+  orig: 852, 1074
+  offset: 0, 0
+  index: -1
+egg4
+  rotate: false
+  xy: 856, 2
+  size: 852, 1074
+  orig: 852, 1074
+  offset: 0, 0
+  index: -1

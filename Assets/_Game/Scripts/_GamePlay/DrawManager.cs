@@ -48,6 +48,7 @@ public class DrawManager : MonoBehaviour
     [Header("GameObject được bật khi va chạm trứng")]
     public GameObject objectToEnable;
     public float vanishDelay = 1f;
+    private string liftLayerName = "Lift";
 
     GameObject currentStroke;
     Rigidbody2D currentRb;
@@ -230,6 +231,9 @@ public class DrawManager : MonoBehaviour
             // handler.vanishLayers = vanishLayers;
             // handler.objectToEnable = objectToEnable;
             // handler.vanishDelay = vanishDelay;
+
+            var attach = currentStroke.AddComponent<StrokeAttachToLift>();
+            attach.Init(liftLayerName);
         }
 
         // Ẩn vùng vẽ
