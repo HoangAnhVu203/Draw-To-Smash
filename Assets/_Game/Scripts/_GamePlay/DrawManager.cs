@@ -48,8 +48,8 @@ public class DrawManager : MonoBehaviour
     [Header("GameObject được bật khi va chạm trứng")]
     public GameObject objectToEnable;
     public float vanishDelay = 1f;
-    private string liftLayerName = "Lift";
-
+    public string[] attachParentLayers = { "Lift", "Gears" }; 
+    public string[] blockDrawLayers = { "Default", "Fence", "Lift"};
     GameObject currentStroke;
     Rigidbody2D currentRb;
     Collider2D activeDrawArea;
@@ -121,10 +121,26 @@ public class DrawManager : MonoBehaviour
     }
 
     Collider2D HitDrawArea(Vector2 worldPos)
+{
+    // Lấy tất cả collider ở đúng điểm chạm (mọi layer)
+    var hits = Physics2D.OverlapPointAll(worldPos);
+    Collider2D draw = null;
+    bool blocked = false;
+
+    for (int i = 0; i < hits.Length; i++)
     {
-        int mask = 1 << LayerMask.NameToLayer(drawLayerName);
-        return Physics2D.OverlapPoint(worldPos, mask);
+        var c = hits[i];
+        if (!c || !c.gameObject.activeInHierarchy || !c.enabled) continue;
+
+        int l = c.gameObject.layer;
+        if (l == drawLayer) draw = c;               // có DrawArea tại điểm
+        else if (IsInBlockList(l)) blocked = true;  // có vật “che” tại cùng điểm
     }
+
+    // Nếu có vật chặn → coi như không thể vẽ
+    if (blocked) return null;
+    return draw; // chỉ trả về DrawArea khi không bị chặn
+}
 
     Vector2 ScreenToWorld(Vector2 screen) =>
         (Vector2)cam.ScreenToWorldPoint(new Vector3(screen.x, screen.y, 0f));
@@ -233,7 +249,7 @@ public class DrawManager : MonoBehaviour
             // handler.vanishDelay = vanishDelay;
 
             var attach = currentStroke.AddComponent<StrokeAttachToLift>();
-            attach.Init(liftLayerName);
+            attach.Init(attachParentLayers);
         }
 
         // Ẩn vùng vẽ
@@ -279,5 +295,13 @@ public class DrawManager : MonoBehaviour
             yield return null;
         }
         go.SetActive(false);
+    }
+
+    bool IsInBlockList(int layer)
+    {
+        for (int i = 0; i < blockDrawLayers.Length; i++)
+            if (LayerMask.NameToLayer(blockDrawLayers[i]) == layer)
+                return true;
+        return false;
     }
 }
