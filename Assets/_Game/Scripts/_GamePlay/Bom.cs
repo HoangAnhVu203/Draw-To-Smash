@@ -5,136 +5,167 @@ using UnityEngine;
 [RequireComponent(typeof(Collider2D))]
 public class Bom : MonoBehaviour
 {
+    public enum BombMode
+    {
+        WithRigidbody,   // dùng va chạm vật lý (OnCollisionEnter2D)
+        TriggerOnly      // dùng trigger, không cần lực va chạm
+    }
+
+    [Header("Chế độ hoạt động")]
+    public BombMode bombMode = BombMode.WithRigidbody;
+
     [Header("Fuse")]
-    [Tooltip("Thời gian từ lúc bật kíp tới khi nổ")]
+    [Tooltip("Thời gian từ lúc bật kíp → nổ")]
     public float fuseTime = 2f;
-
-    [Tooltip("Bật kíp khi VA CHẠM (collision). Không dùng trigger.")]
     public bool startOnTouch = true;
-
-    [Header("Arming rules (lọc điều kiện bật kíp)")]
-    [Tooltip("Chỉ các layer này mới được PHÉP bật kíp. 0 = cho tất cả.")]
-    public LayerMask armByLayers = 0;
-
-    [Tooltip("Bỏ qua va chạm trong vài trăm ms đầu để tránh auto-arm khi spawn đang đè nền")]
-    public float armDelay = 0.2f;
-
-    [Tooltip("Yêu cầu vận tốc TỐI THIỂU của chính bom để bật kíp (m/s)")]
-    public float minSelfSpeed = 0.2f;
-
-    [Tooltip("Yêu cầu vận tốc TƯƠNG ĐỐI của va chạm để bật kíp (m/s)")]
-    public float minRelativeSpeed = 0.3f;
 
     [Header("Explosion")]
     public float explosionRadius = 3f;
     public float explosionForce = 500f;
-
-    [Tooltip("Chỉ các layer này mới bị ảnh hưởng bởi VỤ NỔ")]
+    [Tooltip("Chỉ các layer này mới bị lực nổ tác động")]
     public LayerMask affectedLayers = ~0;
 
-    [Header("Effects (Explode)")]
-    public GameObject explosionVFX;      
-    public AudioClip  explosionSfx;
-    public float      destroyDelay = 0.2f;
+    public GameObject explosionVFX;
+    public AudioClip explosionSfx;
+    public float destroyDelay = 0.2f;
 
-    [Header("Effects (Fuse start)")]
-    [Tooltip("VFX xuất hiện NGAY khi bật kíp (nên là particle Loop)")]
+    [Header("Fuse VFX/SFX (bật NGAY khi châm ngòi)")]
     public GameObject fuseStartVFX;
+    public AudioClip fuseStartSfx;
+    [Tooltip("Offset LOCAL của vfx châm ngòi (dây bom)")]
+    public Vector3 fuseVfxOffset = new Vector3(0f, 0.2f, 0f);
+    public bool attachFuseVFXToBomb = true;
 
-    [Tooltip("SFX khi bắt đầu cháy kíp")]
-    public AudioClip  fuseStartSfx;
+    [Header("Điều kiện bật kíp (chỉ dùng cho WithRigidbody)")]
+    [Tooltip("Bỏ qua va chạm trong X giây đầu sau khi spawn để tránh nổ ngay khi Play")]
+    public float armDelay = 0.2f;
+    [Tooltip("Chỉ cho phép các layer này châm kíp (0 = mọi layer)")]
+    public LayerMask armByLayers = 0;
+    [Tooltip("Tốc độ tối thiểu của bản thân bom để tính va chạm (m/s)")]
+    public float minSelfSpeed = 0.1f;
+    [Tooltip("Tốc độ tương đối tối thiểu của va chạm (m/s)")]
+    public float minRelativeSpeed = 0.2f;
 
-    [Tooltip("Offset LOCAL để đặt VFX mồi đúng vị trí dây bom")]
-    public Vector3    fuseVfxOffset = new Vector3(0f, 0.2f, 0f);
-
-    [Tooltip("Cho VFX mồi bám theo quả bom trong suốt thời gian chờ nổ")]
-    public bool       attachFuseVFXToBomb = true;
-
-    // ===== internal =====
-    bool        fuseStarted = false;
-    Coroutine   fuseCoroutine;
-    GameObject  fuseVfxInstance;
-    AudioSource audioOneShot;
-    float       _spawnTime;
-
-    void Reset()
-    {
-        // DÙNG COLLIDER THƯỜNG (KHÔNG TRIGGER) để bám tường/sàn
-        var c = GetComponent<Collider2D>();
-        if (c) c.isTrigger = false;
-    }
-
-    void OnValidate()
-    {
-        // Đảm bảo vẫn không phải trigger nếu bạn lỡ bật ở Inspector
-        var c = GetComponent<Collider2D>();
-        if (c) c.isTrigger = false;
-    }
+    // ========= internal =========
+    bool fuseStarted;
+    Coroutine fuseCo;
+    GameObject fuseVfxInstance;
+    AudioSource audioSrc;
+    float spawnTime;
 
     void Awake()
     {
-        // Audio nhẹ để phát one-shot
-        audioOneShot = GetComponent<AudioSource>();
-        if (!audioOneShot)
+        audioSrc = GetComponent<AudioSource>();
+        if (!audioSrc)
         {
-            audioOneShot = gameObject.AddComponent<AudioSource>();
-            audioOneShot.playOnAwake = false;
-            audioOneShot.spatialBlend = 0f; // 2D
+            audioSrc = gameObject.AddComponent<AudioSource>();
+            audioSrc.playOnAwake = false;
+            audioSrc.spatialBlend = 0f;
         }
-        _spawnTime = Time.time;
+
+        spawnTime = Time.time;
+
+        var rb = GetComponent<Rigidbody2D>();
+        var cols = GetComponents<Collider2D>();
+
+        if (bombMode == BombMode.WithRigidbody)
+        {
+            // MODE 1: có Rigidbody
+            if (!rb) rb = gameObject.AddComponent<Rigidbody2D>();
+            rb.bodyType = RigidbodyType2D.Dynamic;
+
+            // tất cả collider là collider thường
+            foreach (var c in cols) c.isTrigger = false;
+        }
+        else
+        {
+            // MODE 2: TriggerOnly
+            if (rb)
+            {
+                rb.bodyType = RigidbodyType2D.Kinematic;
+                rb.gravityScale = 0f;
+            }
+
+            bool hasSolid = false;
+            bool hasTrigger = false;
+            foreach (var c in cols)
+            {
+                if (c.isTrigger) hasTrigger = true;
+                else hasSolid = true;
+            }
+
+            // đảm bảo có ít nhất 1 collider thường để chặn vật
+            if (!hasSolid && cols.Length > 0)
+                cols[0].isTrigger = false;
+
+            // đảm bảo có 1 trigger để bắt kíp
+            if (!hasTrigger)
+            {
+                var trig = gameObject.AddComponent<CircleCollider2D>();
+                trig.isTrigger = true;
+            }
+        }
     }
 
-    // ====== ARm by COLLISION (không dùng trigger) ======
-    void OnCollisionEnter2D(Collision2D c)
+    // ========= MODE 1: WithRigidbody (dùng Collision) =========
+    void OnCollisionEnter2D(Collision2D col)
     {
-        if (!startOnTouch) return;
-        TryArmByCollision(c);
-    }
+        if (bombMode != BombMode.WithRigidbody) return;
+        if (!startOnTouch || fuseStarted) return;
 
-    void TryArmByCollision(Collision2D c)
-    {
-        if (fuseStarted || c == null) return;
+        // 1) tránh auto-arm ngay frame đầu khi đang đè lên tường
+        if (Time.time - spawnTime < armDelay) return;
 
-        // 1) Anti auto-arm ngay khi spawn (đang đè sẵn lên nền)
-        if (Time.time - _spawnTime < armDelay) return;
-
-        // 2) Lọc layer được phép bật kíp (nếu có chọn)
+        // 2) lọc layer được phép châm kíp
         if (armByLayers.value != 0)
         {
-            int otherLayer = c.collider.gameObject.layer;
+            int otherLayer = col.collider.gameObject.layer;
             if ((armByLayers & (1 << otherLayer)) == 0)
-                return; // layer này KHÔNG được phép bật kíp
+                return;
         }
 
-        // 3) Yêu cầu vận tốc tối thiểu
+        // 3) kiểm tra tốc độ của chính bom
         var rb = GetComponent<Rigidbody2D>();
         float selfSpeed = rb ? rb.velocity.magnitude : 0f;
         if (selfSpeed < minSelfSpeed) return;
 
-        // 4) Yêu cầu vận tốc tương đối tối thiểu của va chạm
-        float relSpeed = c.relativeVelocity.magnitude;
+        // 4) kiểm tra tốc độ tương đối của va chạm
+        float relSpeed = col.relativeVelocity.magnitude;
         if (relSpeed < minRelativeSpeed) return;
 
-        // ---- Bật kíp ----
         StartFuse();
     }
 
+    // ========= MODE 2: TriggerOnly (dùng Trigger) =========
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (bombMode != BombMode.TriggerOnly) return;
+        if (!startOnTouch || fuseStarted) return;
+
+        // nếu cũng muốn delay cho mode này thì bỏ comment dòng dưới
+        // if (Time.time - spawnTime < armDelay) return;
+
+        StartFuse();
+    }
+
+    // ========= BẮT ĐẦU CHÂM NGÒI =========
     void StartFuse()
     {
+        if (fuseStarted) return;
         fuseStarted = true;
 
-        // VFX mồi (cháy bấc)
+        // VFX châm ngòi
         if (fuseStartVFX)
         {
-            Vector3 spawnPos = transform.position + transform.TransformDirection(fuseVfxOffset);
-            Quaternion spawnRot = transform.rotation;
+            Vector3 spawnPos = transform.TransformPoint(fuseVfxOffset);
+            fuseVfxInstance = Instantiate(fuseStartVFX, spawnPos, transform.rotation);
 
-            fuseVfxInstance = Instantiate(fuseStartVFX, spawnPos, spawnRot);
-            if (attachFuseVFXToBomb) fuseVfxInstance.transform.SetParent(transform, true);
+            if (attachFuseVFXToBomb)
+                fuseVfxInstance.transform.SetParent(transform, true);
 
-            // Hướng VFX cùng hướng "up" của bom (tuỳ prefab)
-            fuseVfxInstance.transform.up = transform.up;
             fuseVfxInstance.transform.localScale = Vector3.one;
+
+            fuseVfxInstance.transform.up = transform.up;
 
             var ps = fuseVfxInstance.GetComponent<ParticleSystem>();
             if (ps)
@@ -145,9 +176,10 @@ public class Bom : MonoBehaviour
             }
         }
 
-        if (fuseStartSfx && audioOneShot) audioOneShot.PlayOneShot(fuseStartSfx);
+        if (fuseStartSfx && audioSrc)
+            audioSrc.PlayOneShot(fuseStartSfx);
 
-        fuseCoroutine = StartCoroutine(FuseAndExplode());
+        fuseCo = StartCoroutine(FuseAndExplode());
     }
 
     IEnumerator FuseAndExplode()
@@ -156,10 +188,10 @@ public class Bom : MonoBehaviour
         Explode();
     }
 
-    // ====== EXPLODE ======
+    // ========= NỔ =========
     void Explode()
     {
-        // TẮT/DỌN VFX mồi
+        // tắt VFX châm ngòi
         if (fuseVfxInstance)
         {
             var ps = fuseVfxInstance.GetComponent<ParticleSystem>();
@@ -180,27 +212,25 @@ public class Bom : MonoBehaviour
         }
         if (explosionSfx)
         {
-            if (audioOneShot) audioOneShot.PlayOneShot(explosionSfx);
+            if (audioSrc) audioSrc.PlayOneShot(explosionSfx);
             else AudioSource.PlayClipAtPoint(explosionSfx, transform.position);
         }
 
-        // Ảnh hưởng vật lý
+        // Lực nổ
         var hits = Physics2D.OverlapCircleAll(transform.position, explosionRadius, affectedLayers);
         foreach (var hit in hits)
         {
-            var trb = hit.attachedRigidbody;
-            if (trb && trb.bodyType == RigidbodyType2D.Dynamic && !trb.isKinematic)
+            var rb = hit.attachedRigidbody;
+            if (rb && rb.bodyType == RigidbodyType2D.Dynamic && !rb.isKinematic)
             {
-                Vector2 dir = (trb.worldCenterOfMass - (Vector2)transform.position);
+                Vector2 dir = rb.worldCenterOfMass - (Vector2)transform.position;
                 float dist = Mathf.Max(0.01f, dir.magnitude);
 
-                // giảm theo khoảng cách, có sàn 20%
-                float attenuation = Mathf.Clamp01(1f - dist / explosionRadius);
-                attenuation = Mathf.Max(attenuation, 0.2f);
+                float att = Mathf.Clamp01(1f - dist / explosionRadius);
+                att = Mathf.Max(att, 0.2f);
 
-                Vector2 impulse = dir.normalized * explosionForce * attenuation;
-                trb.WakeUp();
-                trb.AddForce(impulse, ForceMode2D.Impulse);
+                rb.WakeUp();
+                rb.AddForce(dir.normalized * explosionForce * att, ForceMode2D.Impulse);
             }
 
             var dmg = hit.GetComponent<IDamageable>();
@@ -208,26 +238,21 @@ public class Bom : MonoBehaviour
             else hit.SendMessage("OnExploded", SendMessageOptions.DontRequireReceiver);
         }
 
-        // Ẩn bom, huỷ trễ để VFX nổ phát xong
         var rend = GetComponent<Renderer>(); if (rend) rend.enabled = false;
-        var col  = GetComponent<Collider2D>(); if (col)  col.enabled = false;
+        var col = GetComponent<Collider2D>(); if (col) col.enabled = false;
         Destroy(gameObject, destroyDelay);
     }
 
     void OnDrawGizmosSelected()
     {
-        // Vẽ vị trí VFX mồi (offset local) để canh dây bom
         Gizmos.color = Color.yellow;
-        Vector3 p = transform.position + transform.TransformDirection(fuseVfxOffset);
-        Gizmos.DrawSphere(p, 0.06f);
+        Gizmos.DrawSphere(transform.TransformPoint(fuseVfxOffset), 0.06f);
 
-        // Vẽ bán kính nổ
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, explosionRadius);
     }
 }
 
-// Interface mẫu (tuỳ chọn)
 public interface IDamageable
 {
     void TakeDamage(float amount);
