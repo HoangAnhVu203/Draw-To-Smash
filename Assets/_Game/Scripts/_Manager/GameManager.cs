@@ -33,7 +33,7 @@ public class GameManager : MonoBehaviour
     [Tooltip("Tên layer của BadEgg")]
     public string badEggLayerName = "BadEgg";
     [Tooltip("Tên layer của GoodEgg (để bật luật mới)")]
-    public string goodEggLayerName = "GoodEgg"; // NEW: GoodEgg
+    public string goodEggLayerName = "GoodEgg"; 
 
     [Tooltip("Kiểm tra ‘theo dõi’ mỗi 0.5s (không quyết định kết quả)")]
     public float pollInterval = 0.5f;
@@ -58,8 +58,8 @@ public class GameManager : MonoBehaviour
 
     // ====== Quản lý Egg cho EggBreak ======
     readonly HashSet<EggBreak> badEggs  = new HashSet<EggBreak>();
-    readonly HashSet<EggBreak> goodEggs = new HashSet<EggBreak>();   // NEW: GoodEgg
-    bool hasGoodEggInLevel = false;                                   // NEW: GoodEgg
+    readonly HashSet<EggBreak> goodEggs = new HashSet<EggBreak>();   
+    bool hasGoodEggInLevel = false;                                   
 
     void Start()
     {
@@ -67,7 +67,7 @@ public class GameManager : MonoBehaviour
         if (badEggLayer < 0)
             Debug.LogWarning($"[GameManager] Layer '{badEggLayerName}' chưa tồn tại.");
 
-        goodEggLayer = LayerMask.NameToLayer(goodEggLayerName);       // NEW
+        goodEggLayer = LayerMask.NameToLayer(goodEggLayerName);       
         if (goodEggLayer < 0)
             Debug.LogWarning($"[GameManager] Layer '{goodEggLayerName}' chưa tồn tại.");
 
@@ -94,8 +94,8 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            goodEggs.Add(egg);          // NEW
-            hasGoodEggInLevel = true;   // NEW: level này có GoodEgg → bật luật mới
+            goodEggs.Add(egg);          
+            hasGoodEggInLevel = true;  
         }
     }
 

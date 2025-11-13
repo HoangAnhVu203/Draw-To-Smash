@@ -41,13 +41,14 @@ public class Gears : MonoBehaviour
     }
 
     void FixedUpdate()
+{
+    if (isAutoRotate)
     {
-        if (isAutoRotate)
-        {
-            float dir = rotateClockwise ? -1f : 1f;
-            gearRB.MoveRotation(gearRB.rotation + dir * rotateSpeed * Time.fixedDeltaTime);
-        }
+        float dir = rotateClockwise ? -1f : 1f;
+        gearRB.angularVelocity = dir * rotateSpeed * Mathf.Deg2Rad;
+        
     }
+}
 
     void OnCollisionEnter2D(Collision2D c) => TryPin(c);
     void OnCollisionStay2D(Collision2D c) => TryPin(c);
