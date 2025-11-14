@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 7803055299210916725}
   - component: {fileID: 6419320902059694921}
-  - component: {fileID: 5647489707356963538}
   - component: {fileID: 9133896755337235062}
   - component: {fileID: 3303768899128501876}
+  - component: {fileID: 3544585197238848339}
   m_Layer: 0
   m_Name: Lifter
   m_TagString: Untagged
@@ -30,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -0.92, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
+  m_LocalScale: {x: 0.1, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -76,7 +76,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 955837a6c050b49b892519368aee33cb, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 18d7ef18b4af241ca9cd03d3cb3b413b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -87,59 +87,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!60 &5647489707356963538
-PolygonCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8366743863676060943}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 4.93, y: 1.51}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Points:
-    m_Paths:
-    - - {x: 2.2824824, y: 0.74801433}
-      - {x: 2.2951684, y: 0.11999059}
-      - {x: -2.2845824, y: 0.12171018}
-      - {x: -2.2759078, y: 0.755}
-      - {x: -2.465, y: 0.755}
-      - {x: -2.465, y: -0.755}
-      - {x: 2.465, y: -0.755}
-      - {x: 2.465, y: 0.755}
-  m_UseDelaunayMesh: 0
 --- !u!50 &9133896755337235062
 Rigidbody2D:
   serializedVersion: 4
@@ -182,8 +129,8 @@ HingeJoint2D:
   m_BreakTorque: Infinity
   m_BreakAction: 3
   m_AutoConfigureConnectedAnchor: 1
-  m_Anchor: {x: -0.063044906, y: -0.33098567}
-  m_ConnectedAnchor: {x: -0.031522453, y: -1.0854928}
+  m_Anchor: {x: 0, y: 0}
+  m_ConnectedAnchor: {x: 0, y: -0.704}
   m_UseMotor: 0
   m_Motor:
     m_MotorSpeed: 0
@@ -192,3 +139,59 @@ HingeJoint2D:
   m_AngleLimits:
     m_LowerAngle: 0
     m_UpperAngle: 359
+--- !u!60 &3544585197238848339
+PolygonCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8366743863676060943}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 21.35, y: 8.162622}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Points:
+    m_Paths:
+    - - {x: 9.830591, y: 4.081311}
+      - {x: 9.820167, y: 3.9979126}
+      - {x: 9.65511, y: 4.0022545}
+      - {x: 9.692389, y: -0.014827967}
+      - {x: -9.663446, y: -0.12540007}
+      - {x: -9.667739, y: 4.081311}
+      - {x: -10.581177, y: 4.081311}
+      - {x: -10.602027, y: 3.9145143}
+      - {x: -10.602027, y: -4.0083375}
+      - {x: 10.602027, y: -4.0083375}
+      - {x: 10.602027, y: 4.081311}
+  m_UseDelaunayMesh: 0

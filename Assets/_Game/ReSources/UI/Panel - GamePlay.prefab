@@ -265,6 +265,7 @@ GameObject:
   - component: {fileID: 7798131946672657926}
   - component: {fileID: 4284038282179256171}
   - component: {fileID: 3029882034939956793}
+  - component: {fileID: 3688586347638465977}
   m_Layer: 5
   m_Name: Panel - GamePlay
   m_TagString: Untagged
@@ -362,6 +363,24 @@ MonoBehaviour:
   replayBtn: {fileID: 0}
   nextBtn: {fileID: 7832827974051540767}
   closeBtn: {fileID: 0}
+--- !u!114 &3688586347638465977
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2814561464993719180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 541ee7899a19541148a37dd11e82a0ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHintsPerLevel: 2
+  handPrefab: {fileID: 3166189356870891872, guid: 2345ebd1021c642d6928c2e146cc0ade, type: 3}
+  handParentOverride: {fileID: 7531799891925075348}
+  waypointRootName: HintWaypoints
+  handMoveSpeed: 3
+  handLoop: 0
 --- !u!1 &2978220296590867300
 GameObject:
   m_ObjectHideFlags: 0
@@ -721,4 +740,16 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 8443784167357976974}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 3688586347638465977}
+        m_TargetAssemblyTypeName: HintSystem, Assembly-CSharp
+        m_MethodName: TryUseHint
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2

@@ -134,16 +134,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48d90df9d2a42405e9a35a62274562ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bombMode: 1
   fuseTime: 2
   startOnTouch: 1
-  armByLayers:
-    serializedVersion: 2
-    m_Bits: 448
-  armDelay: 0
-  minSelfSpeed: 0
-  minRelativeSpeed: 0.1
   explosionRadius: 1
-  explosionForce: 200
+  explosionForce: 70
   affectedLayers:
     serializedVersion: 2
     m_Bits: 448
@@ -152,8 +147,14 @@ MonoBehaviour:
   destroyDelay: 0.2
   fuseStartVFX: {fileID: 1854544710097679883, guid: cd4d929d12fdb49df960b53625f0b7c7, type: 3}
   fuseStartSfx: {fileID: 0}
-  fuseVfxOffset: {x: 0.3, y: 0.19, z: 0}
+  fuseVfxOffset: {x: 5.47, y: 3.9, z: 0}
   attachFuseVFXToBomb: 1
+  armDelay: 0
+  armByLayers:
+    serializedVersion: 2
+    m_Bits: 448
+  minSelfSpeed: 0
+  minRelativeSpeed: 0.1
 --- !u!50 &3174211010820918931
 Rigidbody2D:
   serializedVersion: 4
