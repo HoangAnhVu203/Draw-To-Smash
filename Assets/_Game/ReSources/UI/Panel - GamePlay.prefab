@@ -375,7 +375,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 541ee7899a19541148a37dd11e82a0ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHintsPerLevel: 2
+  maxHintsPerLevel: 1000
   handPrefab: {fileID: 3166189356870891872, guid: 2345ebd1021c642d6928c2e146cc0ade, type: 3}
   handParentOverride: {fileID: 7531799891925075348}
   waypointRootName: HintWaypoints

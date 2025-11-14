@@ -5,7 +5,7 @@ using System.Linq;
 public class HintSystem : MonoBehaviour
 {
     [Header("Config")]
-    public int maxHintsPerLevel = 2;
+    public int maxHintsPerLevel = 1000;
 
     [Header("Refs")]
     public GameObject handPrefab;         // HandHand_PF
