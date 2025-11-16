@@ -298,6 +298,7 @@ public class GameManager : MonoBehaviour
         if (victoryPanel) victoryPanel.SetActive(false);
         if (failPanel)    failPanel.SetActive(false);
         if (pausePanel)   pausePanel.SetActive(false);
+        UIManager.Instance.OpenUI<CanvasGamePlay>();
 
         if (pollInterval > 0f)
             pollingCo = StartCoroutine(PollBadEggs());

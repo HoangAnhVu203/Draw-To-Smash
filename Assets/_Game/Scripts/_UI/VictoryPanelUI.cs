@@ -25,19 +25,19 @@ public class VictoryPanelUI : MonoBehaviour
     {
         Time.timeScale = 1f;
         LevelManager.Instance?.Replay();
-        gameObject.SetActive(false);
+        //gameObject.SetActive(false);
     }
 
     public void OnNext()
     {
         Time.timeScale = 1f;
         LevelManager.Instance?.NextLevel();
-        gameObject.SetActive(false);
+        //gameObject.SetActive(false);
     }
 
     public void OnClose()
     {
         Time.timeScale = 1f;
-        gameObject.SetActive(false);
+        //gameObject.SetActive(false);
     }
 }

@@ -5,6 +5,8 @@ using UnityEngine.EventSystems;
 [RequireComponent(typeof(Collider2D))]
 public class Wheel : MonoBehaviour, IPointerClickHandler
 {
+    public static Wheel Instance { get; private set; }
+
     [Header("Hiển thị")]
     public SpriteRenderer spriteRenderer;
     [Range(0f, 1f)] public float maxAlpha = 1f;

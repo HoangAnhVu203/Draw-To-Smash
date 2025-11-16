@@ -7,5 +7,7 @@ public class CanvasSetting : UICanvas
     public void CloseUI()
     {
         UIManager.Instance.CloseUIDirectly<CanvasSetting>();
+        DrawManager.Instance.enabled = true;
+        //Wheel.Instance.enabled = true;
     }
 }

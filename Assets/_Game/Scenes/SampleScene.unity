@@ -376,7 +376,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &884656435
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -560,6 +560,36 @@ MonoBehaviour:
     prefab: {fileID: 7161150647425975550, guid: 11724c5ef6ac27b47870a1f91dcf4e92, type: 3}
   - id: 85
     prefab: {fileID: 5482365145972510955, guid: 04604373e2ddef74bbc753b2aaf58fb9, type: 3}
+  - id: 86
+    prefab: {fileID: 314811267682425653, guid: 2019a13d80d1a432ca75ab3408f5edbc, type: 3}
+  - id: 87
+    prefab: {fileID: 896842670176954147, guid: f1a398ea5762a40c79c8af7faf5fb0a3, type: 3}
+  - id: 88
+    prefab: {fileID: 8982500626127599165, guid: 65e67f9adc08649fd940724863de7a8c, type: 3}
+  - id: 89
+    prefab: {fileID: 2526303628924652899, guid: dcb735327bbf44e8b93ccca5eddbf846, type: 3}
+  - id: 90
+    prefab: {fileID: 3417327107229834837, guid: 07dc0e2ed47ad48258e41b09d92c3150, type: 3}
+  - id: 91
+    prefab: {fileID: 5043728894877061615, guid: d82e8fe77706b4788b6e7580bae9b77f, type: 3}
+  - id: 92
+    prefab: {fileID: 3874706402996589399, guid: c7d6b05604db2433aae42a25e7615890, type: 3}
+  - id: 93
+    prefab: {fileID: 8559730565602469881, guid: 7c5198805155d4a79a4fca1f7fe0222c, type: 3}
+  - id: 94
+    prefab: {fileID: 2434899088645833747, guid: 9f571e826c0a64d80a418c7a9c49f2da, type: 3}
+  - id: 95
+    prefab: {fileID: 2371439289606258852, guid: 7956ceca6e18542bd92b2e5d0cbc57ba, type: 3}
+  - id: 96
+    prefab: {fileID: 7887112812749780280, guid: bfb3e7c80d56c4bc5aad3ef8f062a752, type: 3}
+  - id: 97
+    prefab: {fileID: 1663727609103198834, guid: 6c9c6ee9ee9af46ccab7cc111a2260fc, type: 3}
+  - id: 98
+    prefab: {fileID: 8645802425393360235, guid: cacdba5a53c14476e8e9ae12218c916f, type: 3}
+  - id: 99
+    prefab: {fileID: 941693546719506497, guid: 041c24414def74774a4721a60cbfabb4, type: 3}
+  - id: 100
+    prefab: {fileID: 8592471562721607532, guid: 1da878e6b6ad4954baecc70015588f35, type: 3}
   levelRoot: {fileID: 725108416}
   saveProgress: 0
   loopAtEnd: 1
@@ -733,7 +763,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1768955389
 MonoBehaviour:
   m_ObjectHideFlags: 0
