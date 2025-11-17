@@ -214,6 +214,7 @@ MonoBehaviour:
   detachShell: 1
   pool: {fileID: 8835327793996782822}
   VFXkey: VFX
+  hitSound: {fileID: 8300000, guid: 021e1a7a4609841b3bb0422a9cbef9e8, type: 3}
 --- !u!1 &1377700975613451145
 GameObject:
   m_ObjectHideFlags: 0
@@ -3451,6 +3452,7 @@ MonoBehaviour:
   detachShell: 1
   pool: {fileID: 8835327793996782822}
   VFXkey: VFX
+  hitSound: {fileID: 8300000, guid: 021e1a7a4609841b3bb0422a9cbef9e8, type: 3}
 --- !u!1 &2944268095620416559
 GameObject:
   m_ObjectHideFlags: 0
@@ -4467,6 +4469,7 @@ MonoBehaviour:
   detachShell: 1
   pool: {fileID: 8835327793996782822}
   VFXkey: VFX
+  hitSound: {fileID: 8300000, guid: 021e1a7a4609841b3bb0422a9cbef9e8, type: 3}
 --- !u!1 &5356702221751983695
 GameObject:
   m_ObjectHideFlags: 0
@@ -8475,6 +8478,7 @@ MonoBehaviour:
   detachShell: 1
   pool: {fileID: 8835327793996782822}
   VFXkey: VFX
+  hitSound: {fileID: 8300000, guid: 021e1a7a4609841b3bb0422a9cbef9e8, type: 3}
 --- !u!1 &9216671591121851759
 GameObject:
   m_ObjectHideFlags: 0
