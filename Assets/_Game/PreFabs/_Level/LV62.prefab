@@ -1111,6 +1111,10 @@ PrefabInstance:
       value: Bomb (2)
       objectReference: {fileID: 0}
     - target: {fileID: 8188330000087960705, guid: 3cb722dc5dcbf4ee391cd3efe92f2a10, type: 3}
+      propertyPath: bombMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8188330000087960705, guid: 3cb722dc5dcbf4ee391cd3efe92f2a10, type: 3}
       propertyPath: explosionForce
       value: 50
       objectReference: {fileID: 0}
@@ -1183,6 +1187,10 @@ PrefabInstance:
     - target: {fileID: 4617461908515198691, guid: 3cb722dc5dcbf4ee391cd3efe92f2a10, type: 3}
       propertyPath: m_Name
       value: Bomb (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 8188330000087960705, guid: 3cb722dc5dcbf4ee391cd3efe92f2a10, type: 3}
+      propertyPath: bombMode
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8188330000087960705, guid: 3cb722dc5dcbf4ee391cd3efe92f2a10, type: 3}
       propertyPath: explosionForce
@@ -1534,6 +1542,10 @@ PrefabInstance:
     - target: {fileID: 4617461908515198691, guid: 3cb722dc5dcbf4ee391cd3efe92f2a10, type: 3}
       propertyPath: m_Name
       value: Bomb
+      objectReference: {fileID: 0}
+    - target: {fileID: 8188330000087960705, guid: 3cb722dc5dcbf4ee391cd3efe92f2a10, type: 3}
+      propertyPath: bombMode
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8188330000087960705, guid: 3cb722dc5dcbf4ee391cd3efe92f2a10, type: 3}
       propertyPath: explosionForce
