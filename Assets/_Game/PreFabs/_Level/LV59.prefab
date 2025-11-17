@@ -1600,7 +1600,8 @@ PrefabInstance:
       propertyPath: explosionForce
       value: 20
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 3174211010820918931, guid: 3cb722dc5dcbf4ee391cd3efe92f2a10, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
