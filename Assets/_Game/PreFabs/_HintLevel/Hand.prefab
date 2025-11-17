@@ -100,8 +100,14 @@ MonoBehaviour:
   waypoints: []
   moveSpeed: 3
   pauseAtNode: 0.25
-  loop: 0
+  loop: 1
+  loopCount: 3
   loopDelay: 0.6
   tapPulse: 1
   pulseScale: 1.2
   pulseTime: 0.12
+  destroyOnEnd: 1
+  fadeOutTime: 0.35
+  OnFinished:
+    m_PersistentCalls:
+      m_Calls: []

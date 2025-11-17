@@ -1185,6 +1185,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: BadEgg
       objectReference: {fileID: 0}
+    - target: {fileID: 4005550269691926183, guid: f7ba83db7cf3441c9bc00231761ee56a, type: 3}
+      propertyPath: pool
+      value: 
+      objectReference: {fileID: 3499552319186866520}
     - target: {fileID: 4848305373442408714, guid: f7ba83db7cf3441c9bc00231761ee56a, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.39999998

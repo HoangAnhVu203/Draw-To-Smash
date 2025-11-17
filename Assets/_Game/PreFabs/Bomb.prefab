@@ -143,10 +143,10 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 448
   explosionVFX: {fileID: 2841809644823258944, guid: c8ebedd486b2a4f51ad369152e595d56, type: 3}
-  explosionSfx: {fileID: 0}
+  explosionSfx: {fileID: 8300000, guid: 0ed1ec69f5d3047ca9838fce01d37ed1, type: 3}
   destroyDelay: 0.2
   fuseStartVFX: {fileID: 1854544710097679883, guid: cd4d929d12fdb49df960b53625f0b7c7, type: 3}
-  fuseStartSfx: {fileID: 0}
+  fuseStartSfx: {fileID: 8300000, guid: ce31d0c23cd504ad78e4b40df1b4f363, type: 3}
   fuseVfxOffset: {x: 5.47, y: 3.9, z: 0}
   attachFuseVFXToBomb: 1
   armDelay: 0

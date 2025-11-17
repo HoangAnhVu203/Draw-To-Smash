@@ -1191,6 +1191,7 @@ MonoBehaviour:
   detachShell: 1
   pool: {fileID: 0}
   VFXkey: VFX
+  hitSound: {fileID: 8300000, guid: 021e1a7a4609841b3bb0422a9cbef9e8, type: 3}
 --- !u!1 &3291125762201749900
 GameObject:
   m_ObjectHideFlags: 0

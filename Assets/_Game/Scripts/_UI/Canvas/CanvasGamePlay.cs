@@ -6,15 +6,31 @@ using UnityEngine.UI;
 public class CanvasGamePlay : UICanvas
 {
     public Text levelText;
-    public float showTime = 5f;    
+    public float showTime = 5f;
     public float fadeTime = 0.4f;
+
+    [Header("Timer sau khi vẽ")]
+    public Text timeScale;   // Text hiển thị đếm ngược
+    public AudioClip countdownClip;
+    public AudioSource countdownSource;
 
     Coroutine showRoutine;
 
     void OnEnable()
     {
+        if (timeScale)
+            timeScale.gameObject.SetActive(false);
+        
         if (LevelManager.Instance != null)
             LevelManager.Instance.OnLevelLoaded += OnLevelLoaded;
+
+        // Đăng ký event với GameManager
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnPostStrokeTimerStart += OnPostStrokeTimerStart;
+            GameManager.Instance.OnPostStrokeTimerTick  += OnPostStrokeTimerTick;
+            GameManager.Instance.OnPostStrokeTimerEnd   += OnPostStrokeTimerEnd;
+        }
 
         StartShowLevel();
     }
@@ -23,11 +39,27 @@ public class CanvasGamePlay : UICanvas
     {
         if (LevelManager.Instance != null)
             LevelManager.Instance.OnLevelLoaded -= OnLevelLoaded;
+
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnPostStrokeTimerStart -= OnPostStrokeTimerStart;
+            GameManager.Instance.OnPostStrokeTimerTick  -= OnPostStrokeTimerTick;
+            GameManager.Instance.OnPostStrokeTimerEnd   -= OnPostStrokeTimerEnd;
+        }
     }
 
     void OnLevelLoaded(GameObject go, int index)
     {
         StartShowLevel();
+
+        if (timeScale)
+            timeScale.gameObject.SetActive(false);
+
+        // reset text timer mỗi lần load level mới
+        if (timeScale)
+        {
+            timeScale.gameObject.SetActive(false);
+        }
     }
 
     void StartShowLevel()
@@ -65,13 +97,64 @@ public class CanvasGamePlay : UICanvas
         levelText.gameObject.SetActive(false);
     }
 
+    // ========== HANDLER CHO TIMER ==========
 
+    void OnPostStrokeTimerStart()
+    {
+
+        Debug.Log("Sound Start");
+
+        if (timeScale)
+        {
+            timeScale.gameObject.SetActive(true);
+            // hiển thị full thời gian ban đầu
+            timeScale.text = GameManager.Instance
+                ? GameManager.Instance.tAfterStrokeToJudge.ToString("0")
+                : "";
+        }
+
+        
+        if (countdownSource && countdownClip && AudioManager.IsSoundOn())
+    {
+        countdownSource.clip = countdownClip;
+        countdownSource.loop = true;   // chạy liên tục trong thời gian đếm
+        countdownSource.Play();
+    }
+
+    }
+
+    void OnPostStrokeTimerTick(float remaining)
+    {
+        if (timeScale)
+        {
+            timeScale.text = remaining.ToString("0"); 
+        }
+    }
+
+    void OnPostStrokeTimerEnd()
+    {
+        if (timeScale)
+        {
+            timeScale.gameObject.SetActive(false);
+        }
+        if (countdownSource)
+        countdownSource.Stop();
+
+    }
+
+    // ========== BUTTONS ==========
     public void SettingBTN()
     {
         UIManager.Instance.OpenUI<CanvasSetting>();
-        DrawManager.Instance.enabled = false;
-        //Wheel.Instance.enabled = false;
     }
 
-    
+    public void NextLevelBTN()
+    {
+        GameManager.Instance.NextLevel();
+    }
+
+    public void ReplayBTN()
+    {
+        GameManager.Instance.ReplayLevel();
+    }
 }

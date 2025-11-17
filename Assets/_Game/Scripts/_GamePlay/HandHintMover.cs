@@ -12,6 +12,8 @@ public class HandHintMover : MonoBehaviour
 
     [Header("Loop")]
     public bool loop = true;
+
+    public int loopCount = 3;
     public float loopDelay = 0.6f;
 
     [Header("Visual FX (optional)")]
@@ -20,11 +22,11 @@ public class HandHintMover : MonoBehaviour
     public float pulseTime = 0.12f;
 
     [Header("Finish")]
-    public bool destroyOnEnd = true;       // ✅ hết đường thì biến mất
-    public float fadeOutTime = 0.35f;      // ✅ mờ dần trước khi destroy
-    public UnityEvent OnFinished;          // ✅ callback khi kết thúc (1 lần)
+    public bool destroyOnEnd = true;       
+    public float fadeOutTime = 0.35f;      
+    public UnityEvent OnFinished;         
 
-    LineRenderer lr;                       // nếu có
+    LineRenderer lr;                       
     SpriteRenderer sr;
     Coroutine co;
 
@@ -61,8 +63,11 @@ public class HandHintMover : MonoBehaviour
 
         transform.position = waypoints[0].position;
 
-        do
+        int count = 0;
+
+        while (true)
         {
+            // chạy 1 vòng từ P0 -> Pn
             for (int i = 1; i < waypoints.Length; i++)
             {
                 if (tapPulse) yield return CoPulse();
@@ -78,36 +83,38 @@ public class HandHintMover : MonoBehaviour
                 {
                     t += Time.deltaTime;
                     float u = Mathf.Clamp01(t / dur);
-                    // ease in-out
                     u = u * u * (3f - 2f * u);
                     transform.position = Vector3.Lerp(from, to, u);
                     yield return null;
                 }
 
                 transform.position = to;
+
                 if (tapPulse) yield return CoPulse();
                 if (pauseAtNode > 0f) yield return new WaitForSeconds(pauseAtNode);
             }
 
-            if (loop)
-            {
-                if (loopDelay > 0f) yield return new WaitForSeconds(loopDelay);
-                if (waypoints.Length > 0)
-                    transform.position = waypoints[0].position;
-            }
+            count++;
 
-        } while (loop);
+            // đã đủ số vòng → thoát
+            if (!loop || count >= loopCount)
+                break;
 
-        // ✅ kết thúc một lượt và không lặp
+            // reset về P0
+            if (loopDelay > 0f) yield return new WaitForSeconds(loopDelay);
+            transform.position = waypoints[0].position;
+        }
+
+        // kết thúc
         OnFinished?.Invoke();
 
         if (destroyOnEnd)
         {
-            // mờ dần rồi destroy
             yield return StartCoroutine(CoFadeOut());
             Destroy(gameObject);
         }
     }
+
 
     IEnumerator CoPulse()
     {

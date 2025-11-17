@@ -1,6 +1,8 @@
 using System.Collections;
+using CandyCoded.HapticFeedback;
 using Spine.Unity;
 using UnityEngine;
+
 
 [DisallowMultipleComponent]
 public class EggBreak : MonoBehaviour
@@ -23,6 +25,7 @@ public class EggBreak : MonoBehaviour
     [Header("Pool (VFX)")]
     public Pool pool;
     public string VFXkey = "VFX";
+    public AudioClip hitSound;
 
     Rigidbody2D rb;
     Collider2D col;
@@ -84,6 +87,11 @@ public class EggBreak : MonoBehaviour
 
         if (hitLine || strongHit)
             Break();
+
+        AudioManager.Instance.PlaySFX(hitSound);
+        HapticFeedback.MediumFeedback();
+        // VibrationManager.Vibrate();
+        ScreenShake.Instance.Shake();
     }
 
     void Break()

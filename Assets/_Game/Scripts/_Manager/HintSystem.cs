@@ -21,6 +21,13 @@ public class HintSystem : MonoBehaviour
 
     public bool CanUseHint() => usedHints < maxHintsPerLevel;
 
+    public static HintSystem Instance { get; private set; }
+
+    void Awake()
+    {
+        Instance = this;
+    }
+
     public void TryUseHint()
     {
         if (!CanUseHint())
@@ -65,6 +72,7 @@ public class HintSystem : MonoBehaviour
         {
             mover.moveSpeed = handMoveSpeed;
             mover.loop = handLoop;
+            mover.loopCount = 3;
             mover.SetPath(points.Select(p => p).ToArray());
         }
 

@@ -633,6 +633,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: BadEgg
       objectReference: {fileID: 0}
+    - target: {fileID: 4005550269691926183, guid: f7ba83db7cf3441c9bc00231761ee56a, type: 3}
+      propertyPath: pool
+      value: 
+      objectReference: {fileID: 8159889625674834553}
     - target: {fileID: 4848305373442408714, guid: f7ba83db7cf3441c9bc00231761ee56a, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.07
@@ -819,6 +823,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1056172376865686325, guid: b87fb2836ef0a460bbde02a6bb2afce0, type: 3}
   m_PrefabInstance: {fileID: 7801133037427580686}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8159889625674834553 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2125401382445989239, guid: b87fb2836ef0a460bbde02a6bb2afce0, type: 3}
+  m_PrefabInstance: {fileID: 7801133037427580686}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5012625b9b9c44eba6314be6688f528, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &8634303532436878940
 PrefabInstance:
   m_ObjectHideFlags: 0

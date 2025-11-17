@@ -164,6 +164,11 @@ public class DrawManager : MonoBehaviour
 
         beads.Clear();
 
+        if(HintSystem.Instance != null)
+        {
+            HintSystem.Instance.HideHint();
+        }
+
         // spawn bead đầu tiên
         SpawnBead(startWorld, true);
     }

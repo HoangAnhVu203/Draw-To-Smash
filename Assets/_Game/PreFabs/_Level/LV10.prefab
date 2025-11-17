@@ -1481,7 +1481,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8188330000087960705, guid: 3cb722dc5dcbf4ee391cd3efe92f2a10, type: 3}
       propertyPath: explosionForce
-      value: 50
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 8188330000087960705, guid: 3cb722dc5dcbf4ee391cd3efe92f2a10, type: 3}
       propertyPath: fuseVfxOffset.x
@@ -1560,7 +1560,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8188330000087960705, guid: 3cb722dc5dcbf4ee391cd3efe92f2a10, type: 3}
       propertyPath: explosionForce
-      value: 50
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 8188330000087960705, guid: 3cb722dc5dcbf4ee391cd3efe92f2a10, type: 3}
       propertyPath: fuseVfxOffset.x
@@ -1593,13 +1593,17 @@ PrefabInstance:
       propertyPath: m_Name
       value: Egg
       objectReference: {fileID: 0}
+    - target: {fileID: 4005550269691926183, guid: f7ba83db7cf3441c9bc00231761ee56a, type: 3}
+      propertyPath: pool
+      value: 
+      objectReference: {fileID: 151039986727830238}
     - target: {fileID: 4848305373442408714, guid: f7ba83db7cf3441c9bc00231761ee56a, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.07
+      value: 0.05
       objectReference: {fileID: 0}
     - target: {fileID: 4848305373442408714, guid: f7ba83db7cf3441c9bc00231761ee56a, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.07
+      value: 0.05
       objectReference: {fileID: 0}
     - target: {fileID: 4848305373442408714, guid: f7ba83db7cf3441c9bc00231761ee56a, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1642,7 +1646,9 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 8163412520142967375, guid: f7ba83db7cf3441c9bc00231761ee56a, type: 3}
+    - {fileID: 1600309610828502376, guid: f7ba83db7cf3441c9bc00231761ee56a, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f7ba83db7cf3441c9bc00231761ee56a, type: 3}
@@ -1663,13 +1669,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: Egg (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 2269123818378009670, guid: f7ba83db7cf3441c9bc00231761ee56a, type: 3}
+      propertyPath: _animationName
+      value: action4
+      objectReference: {fileID: 0}
+    - target: {fileID: 4005550269691926183, guid: f7ba83db7cf3441c9bc00231761ee56a, type: 3}
+      propertyPath: pool
+      value: 
+      objectReference: {fileID: 151039986727830238}
     - target: {fileID: 4848305373442408714, guid: f7ba83db7cf3441c9bc00231761ee56a, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.07
+      value: 0.05
       objectReference: {fileID: 0}
     - target: {fileID: 4848305373442408714, guid: f7ba83db7cf3441c9bc00231761ee56a, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.07
+      value: 0.05
       objectReference: {fileID: 0}
     - target: {fileID: 4848305373442408714, guid: f7ba83db7cf3441c9bc00231761ee56a, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1712,7 +1726,9 @@ PrefabInstance:
       value: 180
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 8163412520142967375, guid: f7ba83db7cf3441c9bc00231761ee56a, type: 3}
+    - {fileID: 1600309610828502376, guid: f7ba83db7cf3441c9bc00231761ee56a, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f7ba83db7cf3441c9bc00231761ee56a, type: 3}

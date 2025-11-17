@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public enum GameState { Gameplay, Victory, Fail, Pause }
 
@@ -44,6 +45,9 @@ public class GameManager : MonoBehaviour
     [Tooltip("Mốc thời gian chấm từ sau khi vẽ xong (xét THUA nếu còn BadEgg; xét THẮNG nếu hết)")]
     public float tAfterStrokeToJudge = 10f;
 
+    public AudioClip winSFX;
+    public AudioClip failSFX;
+
     public GameState state { get; private set; }
 
     int badEggLayer;
@@ -59,7 +63,11 @@ public class GameManager : MonoBehaviour
     // ====== Quản lý Egg cho EggBreak ======
     readonly HashSet<EggBreak> badEggs  = new HashSet<EggBreak>();
     readonly HashSet<EggBreak> goodEggs = new HashSet<EggBreak>();   
-    bool hasGoodEggInLevel = false;                                   
+    bool hasGoodEggInLevel = false;
+
+    public event Action<float> OnPostStrokeTimerTick; // gửi remaining time (giây)
+    public event Action OnPostStrokeTimerStart;
+    public event Action OnPostStrokeTimerEnd;
 
     void Start()
     {
@@ -172,16 +180,40 @@ public class GameManager : MonoBehaviour
 
     // -------- Mốc 10s kể từ SAU KHI VẼ: xét THẮNG/THUA --------
     IEnumerator JudgeAfterStroke()
+{
+    float duration = tAfterStrokeToJudge;
+    float t = 0f;
+
+    // báo UI: bắt đầu đếm
+    OnPostStrokeTimerStart?.Invoke();
+
+    while (t < duration)
     {
-        yield return new WaitForSecondsRealtime(tAfterStrokeToJudge);
-        if (state != GameState.Gameplay) yield break;
+        if (state != GameState.Gameplay)
+        {
+            OnPostStrokeTimerEnd?.Invoke();
+            yield break;
+        }
 
-        postStrokeJudgeDone = true;
+        t += Time.unscaledDeltaTime; // dùng unscaled để không bị Time.timeScale ảnh hưởng
+        float remaining = Mathf.Max(0f, duration - t);
 
-        bool hasBadEgg = ExistsActiveInLayer(badEggLayer);
-        if (hasBadEgg) SetFail();
-        else SetVictory();
+        OnPostStrokeTimerTick?.Invoke(remaining);
+
+        yield return null;
     }
+
+    OnPostStrokeTimerEnd?.Invoke();
+
+    if (state != GameState.Gameplay) yield break;
+
+    postStrokeJudgeDone = true;
+
+    bool hasBadEgg = ExistsActiveInLayer(badEggLayer);
+    if (hasBadEgg) SetFail();
+    else SetVictory();
+}
+
 
     // ================= ExistsActiveInLayer =================
     bool ExistsActiveInLayer(int layer)
@@ -227,6 +259,11 @@ public class GameManager : MonoBehaviour
     {
         if (state != GameState.Gameplay) return;
         state = GameState.Victory;
+        OnPostStrokeTimerEnd?.Invoke();
+
+        if (AudioManager.Instance != null)
+        AudioManager.Instance.PlaySFX(winSFX);
+
         Time.timeScale = 0f;
         UIManager.Instance.OpenUI<CanvasVictory>();
 
@@ -238,6 +275,11 @@ public class GameManager : MonoBehaviour
     {
         if (state != GameState.Gameplay) return;
         state = GameState.Fail;
+        OnPostStrokeTimerEnd?.Invoke();
+
+        if (AudioManager.Instance != null)
+        AudioManager.Instance.PlaySFX(failSFX);
+
         Time.timeScale = 0f;
         UIManager.Instance.OpenUI<CanvasFail>();
 
