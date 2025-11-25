@@ -405,6 +405,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   levels:
+  - id: 0
+    prefab: {fileID: 3375268969739582613, guid: a78d528bdb562a146b12c3bf57d8bf2f, type: 3}
   - id: 1
     prefab: {fileID: 2790226620320421732, guid: 3fb7c864c0e45704fb8a84fec43bb68b, type: 3}
   - id: 2
@@ -1106,6 +1108,10 @@ MonoBehaviour:
   tAfterStrokeToJudge: 5
   winSFX: {fileID: 8300000, guid: 33f69aefc70a64ebca318499b1352afa, type: 3}
   failSFX: {fileID: 8300000, guid: cbeac830cb7594b189b0377499398a65, type: 3}
+  forceDemoOnStart: 0
+  demoLevelIndices: 00000000
+  demoSwitchDelay: 3
+  firstRealLevelIndex: 1
 --- !u!4 &1768955390
 Transform:
   m_ObjectHideFlags: 0
