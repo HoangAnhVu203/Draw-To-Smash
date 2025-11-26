@@ -532,6 +532,14 @@ MonoBehaviour:
   timeScale: {fileID: 2227145833304375578}
   countdownClip: {fileID: 8300000, guid: eb3bbcb3ef8d74af887f795480632ac7, type: 3}
   countdownSource: {fileID: 6903347085821433013}
+  nextLvButton: {fileID: 269766041757151865}
+  nextWaitTime: 14
+  nextScaleUp: 1.2
+  nextScaleDuration: 0.3
+  hintButton: {fileID: 4227117362072622014}
+  hintWaitTime: 7
+  hintScaleUp: 1.2
+  hintScaleDuration: 0.3
 --- !u!114 &3688586347638465977
 MonoBehaviour:
   m_ObjectHideFlags: 0
