@@ -74,7 +74,7 @@ public class CanvasGamePlay : UICanvas
     {
         if (levelText == null) yield break;
 
-        int index = LevelManager.Instance.CurrentIndex ;
+        int index = LevelManager.Instance.CurrentIndex;
         levelText.text = $"Level {index}";
 
         var c = levelText.color;

@@ -48,8 +48,13 @@ public class DrawManager : MonoBehaviour
     [Header("GameObject được bật khi va chạm trứng")]
     public GameObject objectToEnable;
     public float vanishDelay = 1f;
-    public string[] attachParentLayers = { "Lift", "Gears" }; 
-    public string[] blockDrawLayers = { "Default", "Fence", "Lift"};
+
+    [Header("Layer cha để attach stroke (Lift, Gears ...)")]
+    public string[] attachParentLayers = { "Lift", "Gears" };
+
+    [Header("Layer chặn vẽ")]
+    public string[] blockDrawLayers = { "Default", "Fence", "Lift" };
+
     GameObject currentStroke;
     Rigidbody2D currentRb;
     Collider2D activeDrawArea;
@@ -75,13 +80,19 @@ public class DrawManager : MonoBehaviour
         }
     }
 
-    void Start()
-    {
-        UIManager.Instance.OpenUI<CanvasGamePlay>();
-    }
+    // ❌ BỎ OpenUI Gameplay ở đây, UI do GameManager xử lý
+    void Start() { }
 
     void Update()
     {
+        // Nếu có GameManager thì chỉ cho vẽ khi đang Gameplay
+        if (GameManager.Instance != null)
+        {
+            var s = GameManager.Instance.CurrentState;
+            if (s != GameState.Gameplay)
+                return;
+        }
+
 #if UNITY_EDITOR || UNITY_STANDALONE
         if (Input.GetMouseButtonDown(0)) TryBeginStroke(Input.mousePosition);
         if (Input.GetMouseButton(0)) TryContinueStroke(Input.mousePosition);
@@ -90,14 +101,58 @@ public class DrawManager : MonoBehaviour
         if (Input.touchCount > 0)
         {
             var t = Input.GetTouch(0);
-            if (t.phase == TouchPhase.Began) TryBeginStroke(t.position);
-            if (t.phase == TouchPhase.Moved || t.phase == TouchPhase.Stationary) TryContinueStroke(t.position);
-            if (t.phase == TouchPhase.Ended) EndStroke();
+            if (t.phase == TouchPhase.Began)      TryBeginStroke(t.position);
+            if (t.phase == TouchPhase.Moved ||
+                t.phase == TouchPhase.Stationary) TryContinueStroke(t.position);
+            if (t.phase == TouchPhase.Ended)      EndStroke();
         }
 #endif
     }
 
-    // ================== DRAW AREA ==================
+    // =========================================================
+    //     API PUBLIC cho DEMO (tay tự vẽ dùng world position)
+    // =========================================================
+
+    /// <summary>
+    /// Bắt đầu stroke từ world position (dùng cho tay DEMO).
+    /// </summary>
+    public void StartStroke(Vector3 worldPos)
+    {
+        // Nếu đang có stroke khác -> bỏ qua (cho đơn giản)
+        if (currentStroke != null) return;
+
+        Vector2 pos = worldPos;
+
+        // Vẫn tôn trọng DrawArea (nếu path đặt đúng trong vùng vẽ)
+        var col = HitDrawArea(pos);
+        if (!col) return;
+
+        activeDrawArea = col;
+        BeginStroke(pos);
+    }
+
+    /// <summary>
+    /// Thêm điểm vào stroke từ world position (dùng cho tay DEMO).
+    /// </summary>
+    public void AddStrokePoint(Vector3 worldPos)
+    {
+        if (!currentStroke) return;
+
+        Vector2 pos = worldPos;
+
+        // Nếu có DrawArea, đảm bảo tay vẫn trong cùng vùng
+        if (activeDrawArea)
+        {
+            var col = HitDrawArea(pos);
+            if (col != activeDrawArea) return;
+        }
+
+        ContinueStroke(pos);
+    }
+
+    // EndStroke() bên dưới dùng chung cho cả input người chơi và DEMO
+
+    // ================== DRAW AREA (INPUT NGƯỜI CHƠI) ==================
 
     void TryBeginStroke(Vector2 screenPos)
     {
@@ -121,32 +176,33 @@ public class DrawManager : MonoBehaviour
     }
 
     Collider2D HitDrawArea(Vector2 worldPos)
-{
-    // Lấy tất cả collider ở đúng điểm chạm (mọi layer)
-    var hits = Physics2D.OverlapPointAll(worldPos);
-    Collider2D draw = null;
-    bool blocked = false;
-
-    for (int i = 0; i < hits.Length; i++)
     {
-        var c = hits[i];
-        if (!c || !c.gameObject.activeInHierarchy || !c.enabled) continue;
+        // Lấy tất cả collider ở đúng điểm chạm (mọi layer)
+        var hits = Physics2D.OverlapPointAll(worldPos);
+        Collider2D draw = null;
+        bool blocked = false;
 
-        int l = c.gameObject.layer;
-        if (l == drawLayer) draw = c;               // có DrawArea tại điểm
-        else if (IsInBlockList(l)) blocked = true;  // có vật “che” tại cùng điểm
+        for (int i = 0; i < hits.Length; i++)
+        {
+            var c = hits[i];
+            if (!c || !c.gameObject.activeInHierarchy || !c.enabled) continue;
+
+            int l = c.gameObject.layer;
+            if (l == drawLayer) draw = c;               // có DrawArea tại điểm
+            else if (IsInBlockList(l)) blocked = true;  // có vật “che” tại cùng điểm
+        }
+
+        // Nếu có vật chặn → coi như không thể vẽ
+        if (blocked) return null;
+        return draw; // chỉ trả về DrawArea khi không bị chặn
     }
-
-    // Nếu có vật chặn → coi như không thể vẽ
-    if (blocked) return null;
-    return draw; // chỉ trả về DrawArea khi không bị chặn
-}
 
     Vector2 ScreenToWorld(Vector2 screen) =>
         (Vector2)cam.ScreenToWorldPoint(new Vector3(screen.x, screen.y, 0f));
 
-    // ================== STROKE ==================
+    // ================== STROKE CORE ==================
 
+    // private: core tạo stroke
     void BeginStroke(Vector2 startWorld)
     {
         if (!beadPrefab)
@@ -164,7 +220,7 @@ public class DrawManager : MonoBehaviour
 
         beads.Clear();
 
-        if(HintSystem.Instance != null)
+        if (HintSystem.Instance != null)
         {
             HintSystem.Instance.HideHint();
         }
@@ -227,7 +283,7 @@ public class DrawManager : MonoBehaviour
         lastBeadPos = pos;
     }
 
-    void EndStroke()
+    public void EndStroke()
     {
         if (!currentStroke)
         {
@@ -249,9 +305,9 @@ public class DrawManager : MonoBehaviour
 
             // Nếu muốn xử lý va chạm trứng thì add script tại đây:
             // var handler = currentStroke.AddComponent<StrokeCollisionHandler>();
-            // handler.vanishLayers = vanishLayers;
+            // handler.vanishLayers   = vanishLayers;
             // handler.objectToEnable = objectToEnable;
-            // handler.vanishDelay = vanishDelay;
+            // handler.vanishDelay    = vanishDelay;
 
             var attach = currentStroke.AddComponent<StrokeAttachToLift>();
             attach.Init(attachParentLayers);
@@ -283,24 +339,46 @@ public class DrawManager : MonoBehaviour
 
     IEnumerator FadeAndDisable(GameObject go, float dur)
     {
+        // GameObject đã bị huỷ từ trước
+        if (!go) yield break;
+
         var sr = go.GetComponent<SpriteRenderer>();
+
+        // Không có SpriteRenderer hoặc thời gian fade <= 0
         if (!sr || dur <= 0f)
         {
-            go.SetActive(false);
+            if (go) go.SetActive(false);
             yield break;
         }
 
-        Color c = sr.color;
+        Color startColor = sr.color;
         float t = 0f;
+
         while (t < dur)
         {
+            // Nếu trong lúc fade object / renderer bị Destroy -> dừng luôn
+            if (!go || !sr)
+                yield break;
+
             t += Time.deltaTime;
-            float a = Mathf.Lerp(c.a, 0f, t / dur);
-            sr.color = new Color(c.r, c.g, c.b, a);
+            float a = Mathf.Lerp(startColor.a, 0f, t / dur);
+
+            // Kiểm tra thêm phòng trường hợp sr bị null đúng frame này
+            if (sr)
+                sr.color = new Color(startColor.r, startColor.g, startColor.b, a);
+
             yield return null;
         }
-        go.SetActive(false);
+
+        if (go)
+        {
+            if (sr)
+                sr.color = new Color(startColor.r, startColor.g, startColor.b, 0f);
+
+            go.SetActive(false);
+        }
     }
+
 
     bool IsInBlockList(int layer)
     {
