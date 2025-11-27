@@ -93,11 +93,21 @@ public class LevelManager : MonoBehaviour
         if (levels.Count == 0) return;
 
         int next = CurrentIndex + 1;
+
         if (next >= levels.Count)
         {
-            if (loopAtEnd) next = defaultStartIndex;   // quay lại level thật đầu tiên
-            else next = levels.Count - 1;             // đứng ở level cuối
+            if (loopAtEnd)
+            {
+                next = defaultStartIndex;
+                LoadLevel(next);
+            }
+            else
+            {
+                UIManager.Instance.OpenUI<PanelEndGame>();
+            }
+            return;
         }
+
         LoadLevel(next);
     }
 

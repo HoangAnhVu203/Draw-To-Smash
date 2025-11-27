@@ -237,6 +237,51 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   parent: {fileID: 288092790}
+--- !u!1 &350126094
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 350126096}
+  - component: {fileID: 350126095}
+  m_Layer: 0
+  m_Name: NetworkManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &350126095
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 350126094}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e1ff961303e74dc2badf249e10f1c1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  checkInterval: 2
+--- !u!4 &350126096
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 350126094}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 545.4679, y: 1461.097, z: -7.550416}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -609,8 +654,8 @@ MonoBehaviour:
     prefab: {fileID: 8592471562721607532, guid: 1da878e6b6ad4954baecc70015588f35, type: 3}
   levelRoot: {fileID: 725108416}
   saveProgress: 1
-  loopAtEnd: 1
-  defaultStartIndex: 0
+  loopAtEnd: 0
+  defaultStartIndex: 1
   runtimeRoot: {fileID: 0}
 --- !u!4 &884656436
 Transform:
@@ -1139,3 +1184,4 @@ SceneRoots:
   - {fileID: 884656436}
   - {fileID: 1680629382}
   - {fileID: 725108416}
+  - {fileID: 350126096}
